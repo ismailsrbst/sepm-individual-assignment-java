@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.universe.ui.MainWindowController">
+   <children>
+      <TabPane prefHeight="400.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab text="Vehicle">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="301.0" prefWidth="558.0">
+                     <children>
+                        <Button layoutX="390.0" layoutY="333.0" mnemonicParsing="false" onAction="#addButtonCliked" text="Add" />
+                        <TableView fx:id="tv_vehicle" layoutX="8.0" layoutY="7.0" prefHeight="362.0" prefWidth="301.0">
+                          <columns>
+                            <TableColumn fx:id="tc_model" prefWidth="75.0" text="Model" />
+                            <TableColumn fx:id="tc_license" prefWidth="75.0" text="License" />
+                              <TableColumn fx:id="tc_powerUnit" prefWidth="75.0" text="Power Unit" />
+                              <TableColumn fx:id="tc_basePrice" prefWidth="75.0" text="Base Price" />
+                          </columns>
+                        </TableView>
+                        <Button layoutX="472.0" layoutY="308.0" mnemonicParsing="false" onAction="#deleteButtonClicked" text="Delete" />
+                        <Button layoutX="383.0" layoutY="265.0" mnemonicParsing="false" onAction="#editButtonClicked" text="Edit" />
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab text="Untitled Tab 2">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+            </content>
+          </Tab>
+        </tabs>
+      </TabPane>
+   </children>
+</AnchorPane>
