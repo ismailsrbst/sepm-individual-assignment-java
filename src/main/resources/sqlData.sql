@@ -14,3 +14,22 @@ CREATE TABLE if not EXISTS Vehicle(
   editDate TIMESTAMP,
   isDeleted BOOLEAN NOT NULL
 );
+CREATE TABLE if not EXISTS Booking(
+  bid INTEGER AUTO_INCREMENT PRIMARY KEY,
+  customerName VARCHAR(255) NOT NULL,
+  payTyp ENUM('IBAN', 'CREDITCARD') NOT NULL,
+  payNumber VARCHAR(255) NOT NULL,
+  beginnDate TIMESTAMP NOT NULL,
+  endDate TIMESTAMP NOT NULL,
+  createDate TIMESTAMP NOT NULL,
+  totalPrice INTEGER NOT NULL,
+  editDate TIMESTAMP NOT NULL,
+  status ENUM ('OPEN', 'CANCELED', 'COMPLETED') NOT NULL
+);
+CREATE TABLE if not EXISTS BookingVehicle(
+  vid INTEGER REFERENCES Vehicle(vid),
+  bid INTEGER REFERENCES Booking(bid),
+  licenseNumber VARCHAR(255),
+  licenseCreateDate TIMESTAMP,
+  PRIMARY KEY (vid, bid)
+);

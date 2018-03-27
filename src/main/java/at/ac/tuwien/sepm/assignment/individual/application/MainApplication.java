@@ -1,9 +1,9 @@
 package at.ac.tuwien.sepm.assignment.individual.application;
 
-import at.ac.tuwien.sepm.assignment.individual.universe.service.VehicleService;
-import at.ac.tuwien.sepm.assignment.individual.universe.service.VehicleServiceImp;
-import at.ac.tuwien.sepm.assignment.individual.universe.ui.MainWindowController;
-import at.ac.tuwien.sepm.assignment.individual.universe.util.DBUtil;
+import at.ac.tuwien.sepm.assignment.individual.main.service.VehicleService;
+import at.ac.tuwien.sepm.assignment.individual.main.service.VehicleServiceImp;
+import at.ac.tuwien.sepm.assignment.individual.main.ui.MainWindowController;
+import at.ac.tuwien.sepm.assignment.individual.main.util.DBUtil;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;

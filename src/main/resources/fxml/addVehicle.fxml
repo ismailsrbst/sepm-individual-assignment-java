@@ -6,39 +6,43 @@
 <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="547.0" prefWidth="454.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.universe.ui.AddVehicleController">
+<AnchorPane prefHeight="567.0" prefWidth="444.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.main.ui.AddVehicleController">
    <children>
-      <Label layoutX="94.0" layoutY="37.0" text="Model:" />
-      <Label layoutX="35.0" layoutY="77.0" text="Construction Year:" />
+      <Label layoutX="95.0" layoutY="37.0" text="Model*:" />
+      <Label layoutX="35.0" layoutY="77.0" text="Construction Year*:" />
       <Label layoutX="66.0" layoutY="116.0" text="Description:" />
       <Label layoutX="83.0" layoutY="159.0" text="Seating:" />
-      <Label layoutX="57.0" layoutY="204.0" text="Drive License:" />
-      <Label layoutX="67.0" layoutY="245.0" text="Power Unit:" />
-      <Label layoutX="92.0" layoutY="283.0" text="Power:" />
-      <Label layoutX="70.0" layoutY="323.0" text="Base Price:" />
+      <Label fx:id="lb_driverLicense" layoutX="56.0" layoutY="236.0" text="Drive License:" />
+      <Label layoutX="70.0" layoutY="198.0" text="Power Unit*:" />
+      <Label fx:id="lb_power" layoutX="70.0" layoutY="316.0" text="Power in kw:" />
+      <Label layoutX="70.0" layoutY="356.0" text="Base Price*:" />
       <TextField fx:id="tf_model" layoutX="168.0" layoutY="33.0" />
-      <TextField fx:id="tf_constructionYear" layoutX="168.0" layoutY="73.0" />
+      <TextField fx:id="tf_constructionYear" layoutX="168.0" layoutY="73.0" promptText="1930-2018" />
       <TextField fx:id="tf_description" layoutX="168.0" layoutY="112.0" />
       <TextField fx:id="tf_seating" layoutX="168.0" layoutY="155.0" />
-      <TextField fx:id="tf_basePrice" layoutX="168.0" layoutY="319.0" />
-      <TextField fx:id="tf_power" layoutX="168.0" layoutY="279.0" />
-      <RadioButton fx:id="rb_motorized" layoutX="168.0" layoutY="245.0" mnemonicParsing="false" text="Motorized">
+      <TextField fx:id="tf_basePrice" layoutX="168.0" layoutY="352.0" />
+      <TextField fx:id="tf_power" layoutX="168.0" layoutY="312.0" />
+      <RadioButton fx:id="rb_motorized" layoutX="171.0" layoutY="198.0" mnemonicParsing="false" text="Motorized">
          <toggleGroup>
             <ToggleGroup fx:id="powerUnitGroup" />
          </toggleGroup>
       </RadioButton>
-      <RadioButton fx:id="rb_brawn" layoutX="265.0" layoutY="245.0" mnemonicParsing="false" text="Brawn" toggleGroup="$powerUnitGroup" />
-      <CheckBox fx:id="cb_licenseA" layoutX="168.0" layoutY="204.0" mnemonicParsing="false" text="License A" />
-      <CheckBox fx:id="cb_licenseB" layoutX="257.0" layoutY="204.0" mnemonicParsing="false" text="License B" />
-      <CheckBox fx:id="cb_licenseC" layoutX="340.0" layoutY="204.0" mnemonicParsing="false" text="License C" />
-      <Button layoutX="384.0" layoutY="481.0" mnemonicParsing="false" onAction="#addButtonCliked" text="Add" />
-      <Button layoutX="314.0" layoutY="481.0" mnemonicParsing="false" onAction="#cancelButtonCliked" text="Cancel" />
-      <Label layoutX="89.0" layoutY="372.0" text="Image:" />
-      <Button layoutX="342.0" layoutY="368.0" mnemonicParsing="false" onAction="#selectImageButtonCliked" text="Select Image" />
-      <TextField fx:id="tf_image" editable="false" layoutX="168.0" layoutY="368.0" promptText="ImageName" />
-      <ImageView fx:id="iv_image" fitHeight="126.0" fitWidth="200.0" layoutX="68.0" layoutY="404.0" pickOnBounds="true" preserveRatio="true" />
+      <RadioButton fx:id="rb_brawn" layoutX="268.0" layoutY="198.0" mnemonicParsing="false" selected="true" text="Brawn" toggleGroup="$powerUnitGroup" />
+      <CheckBox fx:id="cb_licenseA" layoutX="169.0" layoutY="236.0" mnemonicParsing="false" text="License A" />
+      <CheckBox fx:id="cb_licenseB" layoutX="256.0" layoutY="236.0" mnemonicParsing="false" text="License B" />
+      <CheckBox fx:id="cb_licenseC" layoutX="339.0" layoutY="236.0" mnemonicParsing="false" text="License C" />
+      <Button fx:id="bt_add" layoutX="355.0" layoutY="481.0" mnemonicParsing="false" onAction="#addButtonCliked" text="Add" />
+      <Button fx:id="bt_edit" layoutX="314.0" layoutY="481.0" mnemonicParsing="false" onAction="#editButtonCliked" text="Edit" />
+      <Button layoutX="105.0" layoutY="528.0" mnemonicParsing="false" onAction="#selectImageButtonCliked" text="Select Image" />
+      <ImageView fx:id="iv_image" fitHeight="126.0" fitWidth="200.0" layoutX="47.0" layoutY="390.0" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../Images/noImageCar.jpeg" />
+         </image></ImageView>
+      <Label fx:id="lb_plateNumber" layoutX="60.0" layoutY="279.0" text="Plate Number:" />
+      <TextField fx:id="tf_plateNumber" layoutX="168.0" layoutY="275.0" />
    </children>
 </AnchorPane>
