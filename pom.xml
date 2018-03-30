@@ -36,6 +36,11 @@
             <artifactId>h2</artifactId>
             <version>1.4.196</version>
         </dependency>
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.6</version>
+        </dependency>
         <!-- runtime dependencies -->
         <dependency>
             <groupId>ch.qos.logback</groupId>

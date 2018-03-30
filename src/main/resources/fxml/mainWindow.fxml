@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.main.ui.MainWindowController">
@@ -15,7 +18,7 @@
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="301.0" prefWidth="558.0">
                      <children>
-                        <Button layoutX="390.0" layoutY="333.0" mnemonicParsing="false" onAction="#addButtonCliked" text="Add" />
+                        <Button layoutX="333.0" layoutY="333.0" mnemonicParsing="false" onAction="#addButtonCliked" text="Add" />
                         <TableView fx:id="tv_vehicle" layoutX="8.0" layoutY="7.0" prefHeight="362.0" prefWidth="301.0">
                           <columns>
                             <TableColumn fx:id="tc_model" prefWidth="75.0" text="Model" />
@@ -24,13 +27,26 @@
                               <TableColumn fx:id="tc_basePrice" prefWidth="75.0" text="Base Price" />
                           </columns>
                         </TableView>
-                        <Button layoutX="472.0" layoutY="308.0" mnemonicParsing="false" onAction="#deleteButtonClicked" text="Delete" />
-                        <Button layoutX="383.0" layoutY="265.0" mnemonicParsing="false" onAction="#editButtonClicked" text="Edit" />
+                        <Button layoutX="423.0" layoutY="333.0" mnemonicParsing="false" onAction="#deleteButtonClicked" text="Delete" />
+                        <Button layoutX="379.0" layoutY="333.0" mnemonicParsing="false" onAction="#editButtonClicked" text="Edit" />
+                        <Button layoutX="489.0" layoutY="333.0" mnemonicParsing="false" onAction="#viewDetailsButtonClicked" text="View Details" />
+                        <Button layoutX="379.0" layoutY="267.0" mnemonicParsing="false" onAction="#searchButtonCliked" text="Search" />
+                        <TextField fx:id="tf_description" layoutX="348.0" layoutY="20.0" promptText="Description" />
+                        <TextField fx:id="tf_powerUnit" layoutX="349.0" layoutY="55.0" promptText="Power Unit" />
+                        <TextField fx:id="tf_seating" layoutX="349.0" layoutY="89.0" promptText="Seating" />
+                        <TextField fx:id="tf_basePriceMin" layoutX="350.0" layoutY="124.0" prefHeight="25.0" prefWidth="94.0" promptText="Base Price Min." />
+                        <TextField fx:id="tf_basePriceMax" layoutX="451.0" layoutY="124.0" prefHeight="25.0" prefWidth="94.0" promptText="Base Price Max." />
+                        <CheckBox layoutX="350.0" layoutY="160.0" mnemonicParsing="false" text="License A" />
+                        <CheckBox layoutX="498.0" layoutY="160.0" mnemonicParsing="false" text="License C" />
+                        <CheckBox layoutX="424.0" layoutY="160.0" mnemonicParsing="false" text="License B" />
+                        <DatePicker fx:id="dp_beginnBooking" layoutX="348.0" layoutY="188.0" prefHeight="25.0" prefWidth="131.0" promptText="Beginn Booking" />
+                        <DatePicker fx:id="dp_endBooking" layoutX="348.0" layoutY="226.0" prefHeight="25.0" prefWidth="131.0" promptText="End Booking" />
+                        <Button layoutX="499.0" layoutY="299.0" mnemonicParsing="false" onAction="#bookingButtonClicked" text="Booking" />
                      </children>
                   </AnchorPane>
             </content>
           </Tab>
-          <Tab text="Untitled Tab 2">
+          <Tab text="Booking">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
             </content>

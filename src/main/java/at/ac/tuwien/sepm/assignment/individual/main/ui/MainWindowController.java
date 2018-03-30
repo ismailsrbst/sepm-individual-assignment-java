@@ -2,6 +2,8 @@ package at.ac.tuwien.sepm.assignment.individual.main.ui;
 
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
+import at.ac.tuwien.sepm.assignment.individual.main.service.BookingService;
+import at.ac.tuwien.sepm.assignment.individual.main.service.BookingVehicleService;
 import at.ac.tuwien.sepm.assignment.individual.main.service.VehicleService;
 import javafx.animation.FadeTransition;
 import javafx.collections.FXCollections;
@@ -24,6 +26,7 @@ import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class MainWindowController implements Initializable{
@@ -50,11 +53,39 @@ public class MainWindowController implements Initializable{
     @FXML
     private TableColumn<Vehicle, Integer> tc_basePrice;
 
+    @FXML
+    private TextField tf_description;
+
+    @FXML
+    private TextField tf_powerUnit;
+
+    @FXML
+    private TextField tf_seating;
+
+    @FXML
+    private TextField tf_basePriceMin;
+
+    @FXML
+    private TextField tf_basePriceMax;
+
+    @FXML
+    private DatePicker dp_beginnBooking;
+
+    @FXML
+    private DatePicker dp_endBooking;
+
     private final VehicleService vehicleService;
+    private final BookingService bookingService;
+    private final BookingVehicleService bookingVehicleService;
 
 
-    public MainWindowController(VehicleService vehicleService) {
+    private Stage stage;
+
+
+    public MainWindowController(VehicleService vehicleService, BookingService bookingService, BookingVehicleService bookingVehicleService) {
         this.vehicleService = vehicleService;
+        this.bookingService = bookingService;
+        this.bookingVehicleService = bookingVehicleService;
         // some transitions for a visually appealing effect
         fadeOutTransition.setFromValue(VISIBLE);
         fadeOutTransition.setToValue(INVISIBLE);
@@ -85,21 +116,23 @@ public class MainWindowController implements Initializable{
     @FXML
     void addButtonCliked(ActionEvent event) throws IOException {
 
-        AddVehicleController addVehicleController = new AddVehicleController(this, vehicleService);
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addVehicle.fxml"));
-        fxmlLoader.setControllerFactory(param -> param.isInstance(addVehicleController) ? addVehicleController : null);
+        AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService);
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
+        fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
         Parent root = fxmlLoader.load();
         Scene scene = new Scene(root);
-        Stage stage = new Stage();
+        stage = new Stage();
         stage.setTitle("Add Vehicle");
-        addVehicleController.getBt_edit().setVisible(false);
+        addAndEditVehicleController.getBt_edit().setVisible(false);
+        addAndEditVehicleController.getBt_booking().setVisible(false);
+        addAndEditVehicleController.getBt_delete().setVisible(false);
         stage.setScene(scene);
         stage.show();
     }
 
     @FXML
     void deleteButtonClicked(ActionEvent event) throws DAOException {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this vehicle?");
+
 
         List<Vehicle> vehicleList = new ArrayList<Vehicle>();
         vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
@@ -107,7 +140,11 @@ public class MainWindowController implements Initializable{
         if (!vehicleList.isEmpty()){
             for (Vehicle vehicle : vehicleList){
                 if (vehicle != null){
-                    vehicleService.delete(vehicle);
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this vehicle?");
+                    Optional<ButtonType> buttonType = alert.showAndWait();
+                    if (buttonType.get() == ButtonType.OK) {
+                        vehicleService.delete(vehicle);
+                    }
                 }
             }
             loadTable();
@@ -124,35 +161,72 @@ public class MainWindowController implements Initializable{
 
         if (vehicleList.size() == 1){
             for (Vehicle vehicle : vehicleList) {
-                //System.out.println(vehicle.getVid() + " " + vehicle.getModel());
-                AddVehicleController addVehicleController = new AddVehicleController(this, vehicleService, vehicle);
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addVehicle.fxml"));
-                fxmlLoader.setControllerFactory(param -> param.isInstance(addVehicleController) ? addVehicleController : null);
+                AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService, vehicle);
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
+                fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
                 Parent root = fxmlLoader.load();
                 Scene scene = new Scene(root);
-                Stage stage = new Stage();
+                stage = new Stage();
                 stage.setTitle("Edit Vehicle");
                 stage.setScene(scene);
-                addVehicleController.getBt_add().setVisible(false);
+                addAndEditVehicleController.getBt_add().setVisible(false);
                 stage.show();
 
-                //stage.show();
-                /*FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addVehicle.fxml"));
+            }
+            //TODO else kismina popup koy
+        }
+    }
+
+
+    @FXML
+    void searchButtonCliked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void viewDetailsButtonClicked(ActionEvent event) {
+        List<Vehicle> vehicleList = new ArrayList<Vehicle>();
+        vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
+
+        if (vehicleList.size() == 1){
+            for (Vehicle vehicle : vehicleList) {
                 try {
-                    AddVehicleController addVehicleController = new AddVehicleController(this, vehicleService, vehicle);
-                    fxmlLoader.setControllerFactory(param -> param.isInstance(addVehicleController) ? addVehicleController : null);
+                    AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService, vehicle);
+                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
+                    fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
                     Parent root = fxmlLoader.load();
-                    Stage stage = new Stage();
-                    stage.initStyle(StageStyle.DECORATED);
-                    stage.initModality(Modality.APPLICATION_MODAL);
-                    stage.setScene(new Scene(root));
+                    Scene scene = new Scene(root);
+                    stage = new Stage();
+                    stage.setTitle("Detail Vehicle");
+                    stage.setScene(scene);
+                    addAndEditVehicleController.getBt_add().setVisible(false);
                     stage.show();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-*/
-
             }
         }
+    }
+
+    @FXML
+    void bookingButtonClicked(ActionEvent event) throws IOException {
+        List<Vehicle> vehicleList = new ArrayList<Vehicle>();
+        vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
+
+        if (!vehicleList.isEmpty()){
+            BookingVehicleController bookingVehicleController = new BookingVehicleController(this, vehicleList, bookingService);
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/bookingVehicle.fxml"));
+            fxmlLoader.setControllerFactory(param -> param.isInstance(bookingVehicleController) ? bookingVehicleController : null);
+            Parent root = fxmlLoader.load();
+            Scene scene = new Scene(root);
+            stage = new Stage();
+            stage.setTitle("Booking Vehicle");
+            stage.setScene(scene);
+            stage.show();
+        }
+    }
+
+    public void exit(){
+        this.stage.close();
     }
 }

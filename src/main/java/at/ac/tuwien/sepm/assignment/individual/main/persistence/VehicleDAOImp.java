@@ -25,7 +25,7 @@ public class VehicleDAOImp implements VehicleDAO {
     public Vehicle create(Vehicle vehicle) throws DAOException {
 
         this.sqlQuery = "INSERT INTO Vehicle(model,constructionYear,description,seating,plateNumber,driverLicense,powerUnit," +
-            "power,basePrice,createDate,imageUrl,editDate,isDeleted) Values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            "power,basePrice,createDate,imageUrl,editDate,isDeleted) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try {
             PreparedStatement psmt = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);

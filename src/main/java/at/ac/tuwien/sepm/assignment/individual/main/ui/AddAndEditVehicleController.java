@@ -16,9 +16,10 @@ import javafx.stage.FileChooser;
 import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class AddVehicleController implements Initializable{
+public class AddAndEditVehicleController implements Initializable{
     @FXML
     private TextField tf_model;
 
@@ -76,6 +77,11 @@ public class AddVehicleController implements Initializable{
     @FXML
     private Button bt_add;
 
+    @FXML
+    private Button bt_booking;
+
+    @FXML
+    private Button bt_delete;
 
     private MainWindowController controller;
     private VehicleService service;
@@ -83,12 +89,12 @@ public class AddVehicleController implements Initializable{
     private Vehicle vehicle = null;
     private File file;
 
-    public AddVehicleController(MainWindowController controller, VehicleService service){
+    public AddAndEditVehicleController(MainWindowController controller, VehicleService service){
         this.controller = controller;
         this.service = service;
         //vehicle = new Vehicle();
     }
-    public AddVehicleController(MainWindowController controller, VehicleService service, Vehicle vehicle){
+    public AddAndEditVehicleController(MainWindowController controller, VehicleService service, Vehicle vehicle){
         this.controller = controller;
         this.service = service;
         this.vehicle = vehicle;
@@ -133,6 +139,14 @@ public class AddVehicleController implements Initializable{
 
     public Button getBt_add(){
         return bt_add;
+    }
+
+    public Button getBt_booking() {
+        return bt_booking;
+    }
+
+    public Button getBt_delete() {
+        return bt_delete;
     }
 
 
@@ -263,7 +277,10 @@ public class AddVehicleController implements Initializable{
                 e.printStackTrace();
             }
             try {
-                Files.copy(file.toPath(), new File("src\\main\\resources\\Images\\" + file.getName()).toPath());
+                File file2 = new File("src\\main\\resources\\Images\\" + file.getName());
+                if (file.getName().compareTo(file2.getName()) != 0) {
+                    Files.copy(file.toPath(), file2.toPath());
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -345,6 +362,28 @@ public class AddVehicleController implements Initializable{
         //tf_image.setText("C:\\Users\\Ismail\\Desktop\\SEPM\\sepm-individual-assignment-java\\src\\main\\resources\\Images\\noImageCar.png");
 
         controller.loadTable();
+
+    }
+
+
+    @FXML
+    void bookingButtonCliked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void deleteButtonCliked(ActionEvent event) {
+        try {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this vehicle?");
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            if (buttonType.get() == ButtonType.OK) {
+                service.delete(vehicle);
+                controller.loadTable();
+                controller.exit();
+            }
+        } catch (DAOException e) {
+            e.printStackTrace();
+        }
 
     }
 
