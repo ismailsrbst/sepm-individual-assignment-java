@@ -1,11 +1,18 @@
 package at.ac.tuwien.sepm.assignment.individual.main.persistence;
 
+import at.ac.tuwien.sepm.assignment.individual.main.entities.Booking;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.BookingVehicle;
+import at.ac.tuwien.sepm.assignment.individual.main.entities.Status;
+import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
+import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 import at.ac.tuwien.sepm.assignment.individual.main.util.DBUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BookingVehicleDAOImp implements BookingVehicleDAO {
 
@@ -28,6 +35,7 @@ public class BookingVehicleDAOImp implements BookingVehicleDAO {
         ps.setString(3, bookingVehicle.getLicenseNumber());
         ps.setTimestamp(4, bookingVehicle.getLicenseCreateDate());
         ps.setString(5, bookingVehicle.getVehicle().getModel());
+        bookingVehicle.setModel(bookingVehicle.getVehicle().getModel());
         ps.setInt(6, bookingVehicle.getVehicle().getConstructionYear());
         ps.setString(7, bookingVehicle.getVehicle().getDescription());
         ps.setInt(8, bookingVehicle.getVehicle().getSeating());
@@ -36,9 +44,51 @@ public class BookingVehicleDAOImp implements BookingVehicleDAO {
         ps.setString(11, bookingVehicle.getVehicle().getPowerUnit());
         ps.setInt(12, bookingVehicle.getVehicle().getPower());
         ps.setInt(13, bookingVehicle.getVehicle().getBasePrice());
+        bookingVehicle.setBasePrice(bookingVehicle.getVehicle().getBasePrice());
         ps.setString(14, bookingVehicle.getVehicle().getImageUrl());
         ps.setTimestamp(15, bookingVehicle.getVehicle().getEditDate());
         ps.executeUpdate();
         return bookingVehicle;
+    }
+
+    @Override
+    public List<BookingVehicle> getBookingVehicleByBooking(Booking booking) throws DAOException {
+        this.sqlQuery = "SELECT * FROM BookingVehicle WHERE bid IN (SELECT bid FROM Booking WHERE bid = " + booking.getBid() +")";
+        List<BookingVehicle> bookingVehicleList = new ArrayList<>();
+        try {
+            PreparedStatement psmt = connection.prepareStatement(sqlQuery);
+            ResultSet rs = psmt.executeQuery();
+
+            while (rs.next()) {
+                BookingVehicle bookingVehicle = new BookingVehicle();
+                Vehicle vehicle = new Vehicle();
+                vehicle.setVid(rs.getInt("vid"));
+                vehicle.setModel(rs.getString("model"));
+                vehicle.setConstructionYear(rs.getInt("constructionYear"));
+                vehicle.setDescription(rs.getString("description"));
+                vehicle.setSeating(rs.getInt("seating"));
+                vehicle.setPlateNumber(rs.getString("plateNumber"));
+                vehicle.setDriverLicense(rs.getString("driverLicense"));
+                vehicle.setPowerUnit(rs.getString("powerUnit"));
+                vehicle.setPower(rs.getInt("power"));
+                vehicle.setBasePrice(rs.getInt("basePrice"));
+                vehicle.setImageUrl(rs.getString("imageUrl"));
+                vehicle.setEditDate(rs.getTimestamp("editDate"));
+
+                bookingVehicle.setBid(rs.getInt("bid"));
+                bookingVehicle.setVehicle(vehicle);
+                bookingVehicle.setLicenseNumber(rs.getString("licenseNumber"));
+                bookingVehicle.setLicenseCreateDate(rs.getTimestamp("licenseCreateDate"));
+                bookingVehicle.setBasePrice(vehicle.getBasePrice());
+                bookingVehicle.setModel(vehicle.getModel());
+
+                bookingVehicleList.add(bookingVehicle);
+
+            }
+
+        } catch (SQLException e){
+            throw new DAOException("can't load bookingVehicle.");
+        }
+        return bookingVehicleList;
     }
 }

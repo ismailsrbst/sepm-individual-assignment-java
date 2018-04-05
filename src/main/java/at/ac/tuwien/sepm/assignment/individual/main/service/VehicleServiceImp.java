@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepm.assignment.individual.main.service;
 
+import at.ac.tuwien.sepm.assignment.individual.main.entities.SearchFilter;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.ServiceException;
@@ -29,9 +30,15 @@ public class VehicleServiceImp implements VehicleService {
         return vehicleDAO.create(vehicle);
     }
 
+    @Override
     public Vehicle update(Vehicle vehicle) throws DAOException{
         vehicle.setEditDate(currentTime());
         return vehicleDAO.update(vehicle);
+    }
+
+    @Override
+    public List<Vehicle> search(SearchFilter searchFilter){
+        return vehicleDAO.search(searchFilter);
     }
 
     @Override

@@ -32,6 +32,7 @@ public final class MainApplication extends Application {
                 DBUtil.closeConnection();
             }catch (SQLException ex){
                 Alert alert= new Alert(Alert.AlertType.ERROR,"Failed to close Connection");
+                alert.showAndWait();
             }
         });
 

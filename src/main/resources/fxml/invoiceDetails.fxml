@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="261.0" prefWidth="404.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.main.ui.InvoiceDetailsController">
+   <children>
+      <TableView fx:id="tv_invoiceDetails" prefHeight="261.0" prefWidth="143.0">
+        <columns>
+            <TableColumn fx:id="tc_vehicle" minWidth="0.0" prefWidth="77.0" text="Vehicle" />
+            <TableColumn fx:id="tc_price" minWidth="0.0" prefWidth="64.5" text="Price" />
+        </columns>
+      </TableView>
+      <Label fx:id="lb_totalPrice" layoutX="189.0" layoutY="183.0" text="Total Price: " />
+      <Label fx:id="lb_invoiceNumber" layoutX="162.0" layoutY="21.0" text="Invoice Number: " />
+      <Label fx:id="lb_status" layoutX="207.0" layoutY="51.0" text="Status: " />
+      <Label fx:id="lb_invoiceDate" layoutX="181.0" layoutY="148.0" text="Invoice Date: " />
+      <Label fx:id="lb_startDate" layoutX="194.0" layoutY="82.0" text="Start Date: " />
+      <Label fx:id="lb_endDate" layoutX="197.0" layoutY="115.0" text="End Date: " />
+   </children>
+</AnchorPane>

@@ -24,6 +24,8 @@ CREATE TABLE if not EXISTS Booking(
   createDate TIMESTAMP NOT NULL,
   totalPrice INTEGER NOT NULL,
   editDate TIMESTAMP,
+  invoiceDate TIMESTAMP,
+  invoiceNumber INTEGER,
   status ENUM ('OPEN', 'CANCELED', 'COMPLETED') NOT NULL
 );
 CREATE TABLE if not EXISTS BookingVehicle(

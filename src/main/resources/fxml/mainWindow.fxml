@@ -2,12 +2,16 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.main.ui.MainWindowController">
@@ -31,26 +35,89 @@
                         <Button layoutX="379.0" layoutY="333.0" mnemonicParsing="false" onAction="#editButtonClicked" text="Edit" />
                         <Button layoutX="489.0" layoutY="333.0" mnemonicParsing="false" onAction="#viewDetailsButtonClicked" text="View Details" />
                         <Button layoutX="379.0" layoutY="267.0" mnemonicParsing="false" onAction="#searchButtonCliked" text="Search" />
-                        <TextField fx:id="tf_description" layoutX="348.0" layoutY="20.0" promptText="Description" />
-                        <TextField fx:id="tf_powerUnit" layoutX="349.0" layoutY="55.0" promptText="Power Unit" />
+                        <TextField fx:id="tf_description" layoutX="348.0" layoutY="20.0" promptText="Model" />
                         <TextField fx:id="tf_seating" layoutX="349.0" layoutY="89.0" promptText="Seating" />
                         <TextField fx:id="tf_basePriceMin" layoutX="350.0" layoutY="124.0" prefHeight="25.0" prefWidth="94.0" promptText="Base Price Min." />
                         <TextField fx:id="tf_basePriceMax" layoutX="451.0" layoutY="124.0" prefHeight="25.0" prefWidth="94.0" promptText="Base Price Max." />
-                        <CheckBox layoutX="350.0" layoutY="160.0" mnemonicParsing="false" text="License A" />
-                        <CheckBox layoutX="498.0" layoutY="160.0" mnemonicParsing="false" text="License C" />
-                        <CheckBox layoutX="424.0" layoutY="160.0" mnemonicParsing="false" text="License B" />
-                        <DatePicker fx:id="dp_beginnBooking" layoutX="348.0" layoutY="188.0" prefHeight="25.0" prefWidth="131.0" promptText="Beginn Booking" />
+                        <CheckBox fx:id="cb_a" layoutX="350.0" layoutY="160.0" mnemonicParsing="false" text="License A" />
+                        <CheckBox fx:id="cb_c" layoutX="498.0" layoutY="160.0" mnemonicParsing="false" text="License C" />
+                        <CheckBox fx:id="cb_b" layoutX="424.0" layoutY="160.0" mnemonicParsing="false" text="License B" />
+                        <DatePicker fx:id="dp_beginnBooking" layoutX="348.0" layoutY="188.0" prefHeight="25.0" prefWidth="131.0" promptText="Begin Booking" />
                         <DatePicker fx:id="dp_endBooking" layoutX="348.0" layoutY="226.0" prefHeight="25.0" prefWidth="131.0" promptText="End Booking" />
                         <Button layoutX="499.0" layoutY="299.0" mnemonicParsing="false" onAction="#bookingButtonClicked" text="Booking" />
+                        <RadioButton fx:id="rb_motorized" layoutX="348.0" layoutY="60.0" mnemonicParsing="false" text="Motorized">
+                           <toggleGroup>
+                              <ToggleGroup fx:id="powerGroup" />
+                           </toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="rb_brawn" layoutX="436.0" layoutY="60.0" mnemonicParsing="false" text="Brawn" toggleGroup="$powerGroup" />
+                        <RadioButton fx:id="rb_brawn1" layoutX="502.0" layoutY="60.0" mnemonicParsing="false" selected="true" text="All" toggleGroup="$powerGroup" />
+                        <ChoiceBox fx:id="chb_beginBookingHour" layoutX="484.0" layoutY="188.0" prefHeight="25.0" prefWidth="42.0" />
+                        <ChoiceBox fx:id="chb_endBookingMinute" layoutX="538.0" layoutY="226.0" prefHeight="25.0" prefWidth="42.0" />
+                        <ChoiceBox fx:id="chb_endBookingHour" layoutX="484.0" layoutY="226.0" prefHeight="25.0" prefWidth="42.0" />
+                        <ChoiceBox fx:id="chb_beginBookingMinute" layoutX="538.0" layoutY="188.0" prefHeight="25.0" prefWidth="42.0" />
                      </children>
                   </AnchorPane>
             </content>
           </Tab>
           <Tab text="Booking">
             <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <TableView fx:id="tv_booking" prefHeight="371.0" prefWidth="468.0">
+                          <columns>
+                            <TableColumn fx:id="tc_customerName" prefWidth="100.0" text="Customer Name" />
+                            <TableColumn fx:id="tc_beginnDate" prefWidth="128.5" text="Start" />
+                              <TableColumn fx:id="tc_endDate" prefWidth="117.5" text="End" />
+                              <TableColumn fx:id="tc_status" prefWidth="50.5" text="Status" />
+                              <TableColumn fx:id="tc_totalPrice" prefWidth="70.5" text="Total Price" />
+                          </columns>
+                        </TableView>
+                        <Button layoutX="491.0" layoutY="332.0" mnemonicParsing="false" onAction="#cancelButtonCliked" text="Cancel" />
+                        <Button layoutX="479.0" layoutY="297.0" mnemonicParsing="false" onAction="#completedButtonCliked" text="Completed" />
+                        <Button layoutX="478.0" layoutY="261.0" mnemonicParsing="false" onAction="#detailViewButtonCliked" text="Detail View" />
+                        <Button layoutX="474.0" layoutY="225.0" mnemonicParsing="false" onAction="#editBookingButtonCliked" text="Edit Booking" />
+                     </children></AnchorPane>
             </content>
           </Tab>
+            <Tab text="Add Booking">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <Label layoutX="59.0" layoutY="140.0" text="End Date:" />
+                        <Label layoutX="49.0" layoutY="63.0" text="Pay Number:" />
+                        <Label layoutX="31.0" layoutY="26.0" text="Customer Name:" />
+                        <Label layoutX="41.0" layoutY="104.0" text="Starting Date:" />
+                        <TextField fx:id="tf_customerName" layoutX="140.0" layoutY="22.0" />
+                        <TextField fx:id="tf_payNumber" layoutX="140.0" layoutY="59.0" />
+                        <Label fx:id="lb_startDate" layoutX="140.0" layoutY="104.0" />
+                        <Label fx:id="lb_endDate" layoutX="141.0" layoutY="140.0" />
+                        <TableView fx:id="tv_bookingVehicle" layoutX="372.0" onMouseClicked="#tv_bookingVehicleOnMouseCliked" prefHeight="370.0" prefWidth="228.0">
+                          <columns>
+                            <TableColumn fx:id="tc_modelForBooking" prefWidth="75.0" text="Model" />
+                            <TableColumn fx:id="tc_licenseForBooking" prefWidth="75.0" text="License" />
+                              <TableColumn fx:id="tc_basePriceForBooking" prefWidth="75.0" text="Base Price" />
+                          </columns>
+                        </TableView>
+                        <Button layoutX="96.0" layoutY="301.0" mnemonicParsing="false" onAction="#finishBookingButtonClicked" text="Finish Booking" />
+                        <Button layoutX="64.0" layoutY="332.0" mnemonicParsing="false" onAction="#addLicenseNumberAndDateButtonCliked" text="Add License Number and Date" />
+                        <TextField fx:id="tf_licenseNumber" layoutX="140.0" layoutY="173.0" visible="false" />
+                        <DatePicker fx:id="dp_licenseCreateDate" layoutX="140.0" layoutY="216.0" visible="false" />
+                        <Label fx:id="lb_licenseNumber" layoutX="18.0" layoutY="177.0" text="License Number: " visible="false" />
+                        <Label fx:id="lb_LicenseCreateDate" layoutX="5.0" layoutY="220.0" text="Licence Create Date:" visible="false" />
+                        <Label fx:id="lb_driverLicense" layoutX="33.0" layoutY="263.0" text="Driver License: " visible="false" />
+                        <CheckBox fx:id="cb_a" layoutX="144.0" layoutY="263.0" mnemonicParsing="false" text="A" visible="false" />
+                        <CheckBox fx:id="cb_c" layoutX="242.0" layoutY="263.0" mnemonicParsing="false" text="C" visible="false" />
+                        <CheckBox fx:id="cb_b" layoutX="190.0" layoutY="263.0" mnemonicParsing="false" text="B" visible="false" />
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+            <Tab text="Statistics">
+               <content>
+                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+               </content>
+            </Tab>
         </tabs>
       </TabPane>
    </children>

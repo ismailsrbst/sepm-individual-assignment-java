@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepm.assignment.individual.main.service;
 
+import at.ac.tuwien.sepm.assignment.individual.main.entities.SearchFilter;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.ServiceException;
@@ -14,5 +15,7 @@ public interface VehicleService {
 
     List<Vehicle> getAllVehicleList() throws DAOException;
 
-    public Vehicle update(Vehicle vehicle) throws DAOException;
+    List<Vehicle> search(SearchFilter searchFilter);
+
+    Vehicle update(Vehicle vehicle) throws DAOException;
 }

@@ -6,9 +6,9 @@ import java.util.List;
 
 public class Booking {
 
-    private Integer bid, totalPrice;
+    private Integer bid, totalPrice, invoiceNumber;
     private String customerName, payNumber;
-    private Timestamp beginnDate, endDate, createDate, editDate;
+    private Timestamp beginnDate, endDate, createDate, editDate, invoiceDate;
     private PayTyp payTyp;
     private Status status;
     private List<BookingVehicle> bookingVehicles;
@@ -107,5 +107,21 @@ public class Booking {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public Integer getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(Integer invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
+    }
+
+    public Timestamp getInvoiceDate() {
+        return invoiceDate;
+    }
+
+    public void setInvoiceDate(Timestamp invoiceDate) {
+        this.invoiceDate = invoiceDate;
     }
 }

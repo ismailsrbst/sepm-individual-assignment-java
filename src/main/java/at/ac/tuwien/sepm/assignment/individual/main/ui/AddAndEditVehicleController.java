@@ -5,6 +5,8 @@ import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.ServiceException;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.UIException;
 import at.ac.tuwien.sepm.assignment.individual.main.service.VehicleService;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -72,6 +74,12 @@ public class AddAndEditVehicleController implements Initializable{
     private Label lb_power;
 
     @FXML
+    private Label lb_createDate;
+
+    @FXML
+    private Label lb_edtDate;
+
+    @FXML
     private Button bt_edit;
 
     @FXML
@@ -82,6 +90,9 @@ public class AddAndEditVehicleController implements Initializable{
 
     @FXML
     private Button bt_delete;
+
+    @FXML
+    private Button bt_selectImage;
 
     private MainWindowController controller;
     private VehicleService service;
@@ -101,11 +112,204 @@ public class AddAndEditVehicleController implements Initializable{
 
     }
 
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        if (vehicle != null) {
+            setEditTable(vehicle);
+            cb_licenseA.setDisable(true);
+            cb_licenseB.setDisable(true);
+            cb_licenseC.setDisable(true);
+        }
+
+        controller.checkNumberFormat(tf_constructionYear);
+        controller.checkNumberFormat(tf_seating);
+        controller.checkNumberFormat(tf_power);
+        controller.checkNumberFormat(tf_basePrice);
+    }
+
+    public void check() throws UIException {
+        if (tf_model.getText().isEmpty()){
+            throw new UIException("Model cannot be empty.");
+        }else if(tf_constructionYear.getText().isEmpty()){
+            throw new UIException("Construction Year cannot be empty.");
+        }else if(Integer.parseInt(tf_constructionYear.getText()) < 1930 || Integer.parseInt(tf_constructionYear.getText()) > 2018){
+            throw new UIException("Construction Year 1930-2018");
+        }else if((cb_licenseA.isSelected() || cb_licenseB.isSelected() || cb_licenseC.isSelected()) && tf_plateNumber.getText().isEmpty()){
+            throw new UIException("Plate Number cannot be empty.");
+        }else if(rb_motorized.isSelected() && tf_power.getText().isEmpty()){
+            throw new UIException("Power Number cannot be empty.");
+        }else if (tf_basePrice.getText().isEmpty()){
+            throw new UIException("Base Price cannot be empty.");
+        }
+    }
+
+    /*private void checkNumberFormat(TextField textField){
+        textField.textProperty().addListener(new ChangeListener<String>() {
+            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                if(newValue.isEmpty()){
+                    int value = 0;
+                }else {
+                    if (newValue.matches("((\\d*)|(\\d+\\.\\d*))")) {
+                        int value = Integer.parseInt(newValue);
+                    } else {
+                        textField.setText(oldValue);
+                    }
+                }
+            }
+        });
+    }*/
+
+    private String handleOptions(){
+        String mark = "";
+        if (cb_licenseA.isSelected()){
+            mark += 'A';
+        }
+        if (cb_licenseB.isSelected()){
+            mark += 'B';
+        }
+        if (cb_licenseC.isSelected()){
+            mark += 'C';
+        }
+        return mark;
+    }
+
+    @FXML
+    void addButtonCliked(ActionEvent event) throws DAOException {
+        try {
+            check();
+            vehicle = new Vehicle();
+            vehicle.setModel(tf_model.getText());
+            vehicle.setConstructionYear(Integer.parseInt(tf_constructionYear.getText()));
+            vehicle.setDescription(tf_description.getText());
+            vehicle.setSeating((Integer.parseInt(tf_seating.getText().isEmpty() ? "0" : tf_seating.getText())));
+            vehicle.setPowerUnit(rb_brawn.isSelected() ? "Brawn" : "Motorized");
+            vehicle.setDriverLicense(handleOptions());
+            vehicle.setPlateNumber(tf_plateNumber.getText());
+            vehicle.setPower(Integer.parseInt(tf_power.getText().isEmpty() ? "0" : tf_power.getText()));
+            vehicle.setBasePrice(Integer.parseInt(tf_basePrice.getText()));
+            if (file == null){
+                vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
+            }else {
+                vehicle.setImageUrl(file.getAbsolutePath());
+            }
+            service.create(vehicle);
+        } catch (ServiceException e){
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        } catch (UIException e){
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        }
+        controller.loadTable();
+    }
+
+    @FXML
+    void selectImageButtonCliked(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Images", "*.JPEG", "*.PNG"));
+        fileChooser.setTitle("Select a photo for the article");
+        fileChooser.setInitialDirectory(new File("src\\main\\resources\\Images"));
+        file = fileChooser.showOpenDialog(null);
+
+        if (file != null){
+            InputStream is = null;
+            try {
+                is = new FileInputStream(file.getAbsolutePath());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            if (is != null){
+                Image image= new Image(is);
+                long filesizeMB = file.length() / 1024 / 1024;
+                String url = "";
+                if(image.getHeight()<500 || image.getWidth()<500){
+                    Alert alert=new Alert(Alert.AlertType.WARNING,"Image is too small. \nIt must be at least 500x500.");
+                    alert.showAndWait();
+                    url = "src\\main\\resources\\Images\\noImageCar.jpeg";
+                }
+                if(filesizeMB >= 5){
+                    Alert alert=new Alert(Alert.AlertType.WARNING,"Image is too big. Maximum is 5MB.");
+                    alert.showAndWait();
+                    url = "src\\main\\resources\\Images\\noImageCar.jpeg";
+                }
+                try {
+                    if (url.equals("")) {
+                        iv_image.setImage(new Image(new FileInputStream(file.getAbsolutePath())));
+                    } else {
+                        iv_image.setImage(new Image(new FileInputStream(url)));
+                    }
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    File file2 = new File("src\\main\\resources\\Images\\" + file.getName());
+                    if (file.getName().compareTo(file2.getName()) != 0) {
+                        Files.copy(file.toPath(), file2.toPath());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    @FXML
+    void editButtonCliked(ActionEvent event) throws DAOException {
+
+        try {
+            check();
+            vehicle.setModel(tf_model.getText());
+            vehicle.setConstructionYear(Integer.parseInt(tf_constructionYear.getText()));
+            vehicle.setDescription(tf_description.getText());
+            vehicle.setSeating((Integer.parseInt(tf_seating.getText().isEmpty() ? "0" : tf_seating.getText())));
+            vehicle.setPowerUnit(rb_brawn.isSelected() ? "Brawn" : "Motorized");
+            vehicle.setDriverLicense(handleOptions());
+            vehicle.setPlateNumber(tf_plateNumber.getText());
+            vehicle.setPower(Integer.parseInt(tf_power.getText().isEmpty() ? "0" : tf_power.getText()));
+            vehicle.setBasePrice(Integer.parseInt(tf_basePrice.getText()));
+            if (file == null){
+                vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
+            }else {
+                vehicle.setImageUrl(file.getAbsolutePath());
+            }
+            service.update(vehicle);
+
+        } catch (UIException e){
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        } catch (DAOException e) {
+            e.printStackTrace();
+        }
+        controller.loadTable();
+    }
+
+    @FXML
+    void bookingButtonCliked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void deleteButtonCliked(ActionEvent event) {
+        try {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this vehicle?");
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            if (buttonType.get() == ButtonType.OK) {
+                service.delete(vehicle);
+                controller.loadTable();
+                //controller.exit();
+            }
+        } catch (DAOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     public void setEditTable(Vehicle vehicle){
         tf_model.setText(vehicle.getModel());
         tf_constructionYear.setText(vehicle.getConstructionYear() + "");
         tf_description.setText(vehicle.getDescription());
-        tf_seating.setText(vehicle.getSeating() + "");
+        tf_seating.setText(vehicle.getSeating() == 0 ? "" : vehicle.getSeating() + "");
         if (vehicle.getPowerUnit().equals("Motorized")){
             rb_motorized.setSelected(true);
             rb_brawn.setSelected(false);
@@ -149,248 +353,63 @@ public class AddAndEditVehicleController implements Initializable{
         return bt_delete;
     }
 
-
-    @FXML
-    void addButtonCliked(ActionEvent event) throws DAOException {
-
-        try {
-            vehicle = new Vehicle();
-            vehicle.setModel(tf_model.getText());
-            vehicle.setConstructionYear(Integer.parseInt(tf_constructionYear.getText()));
-            vehicle.setDescription(tf_description.getText());
-            vehicle.setSeating((Integer.parseInt(tf_seating.getText().isEmpty() ? "0" : tf_seating.getText())));
-            vehicle.setPowerUnit(rb_brawn.isSelected() ? "Brawn" : "Motorized");
-            vehicle.setDriverLicense(handleOptions(cb_licenseA, cb_licenseB, cb_licenseC));
-            vehicle.setPlateNumber(tf_plateNumber.getText());
-            vehicle.setPower(Integer.parseInt(tf_power.getText().isEmpty() ? "0" : tf_power.getText()));
-            vehicle.setBasePrice(Integer.parseInt(tf_basePrice.getText()));
-            if (file == null){
-                vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
-            }else {
-                vehicle.setImageUrl(file.getAbsolutePath());
-            }
-
-            check();
-            service.create(vehicle);
-
-            /*if(tf_image.getText().isEmpty()){
-                vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
-            } else {
-                try {
-                    copyFile(new File(tf_image.getText()), new File("src\\main\\resources\\Images\\" + imageName));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                vehicle.setImageUrl("src\\main\\resources\\Images\\" + imageName);
-            }*/
-
-        } catch (ServiceException e){
-            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-            alertError.showAndWait();
-        } catch (NumberFormatException e){
-            Alert alertError = new Alert(Alert.AlertType.ERROR, "enter in the correct format " + e, ButtonType.OK);
-            alertError.showAndWait();
-        }catch (UIException e){
-            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-            alertError.showAndWait();
-        }
-        //tf_image.setText("C:\\Users\\Ismail\\Desktop\\SEPM\\sepm-individual-assignment-java\\src\\main\\resources\\Images\\noImageCar.png");
-
-        controller.loadTable();
+    public Button getBt_selectImage(){
+        return bt_selectImage;
     }
 
-    public void check() throws UIException {
-        if (tf_model.getText().isEmpty()){
-            throw new UIException("Model cannot be empty.");
-        }else if(tf_constructionYear.getText().isEmpty()){
-            throw new UIException("Construction Year cannot be empty.");
-        }else if((cb_licenseA.isSelected() || cb_licenseB.isSelected() || cb_licenseC.isSelected()) && tf_plateNumber.getText().isEmpty()){
-            throw new UIException("Plate Number cannot be empty.");
-        }else if(!rb_motorized.isSelected() && !rb_brawn.isSelected()){
-            throw new UIException("You should select either motorized or brawn.");
-        }else if (tf_basePrice.getText().isEmpty()){
-            throw new UIException("Base Price cannot be empty.");
-        }
+    public TextField getTf_model() {
+        return tf_model;
     }
 
-    private String handleOptions(CheckBox a, CheckBox b, CheckBox c){
-        String mark = "";
-
-        if (a.isSelected()){
-            mark += 'A';
-        }
-        if (b.isSelected()){
-            mark += 'B';
-        }
-        if (c.isSelected()){
-            mark += 'C';
-        }
-        return mark;
+    public TextField getTf_constructionYear() {
+        return tf_constructionYear;
     }
 
-    @FXML
-    void selectImageButtonCliked(ActionEvent event) {
-
-        FileChooser fileChooser = new FileChooser();
-        //FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("Images", "*.JPEG", "*.PNG");
-        //FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("Image", ".jpeg", ".png");
-        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Images", "*.JPEG", "*.PNG"));
-        fileChooser.setTitle("Select a photo for the article");
-        //File file2 = new File("src\\main\\resources\\Images");
-        fileChooser.setInitialDirectory(new File("src\\main\\resources\\Images"));
-        file = fileChooser.showOpenDialog(null);
-
-        if (file != null){
-            //vehicle.setImageUrl(file.getAbsolutePath());
-            InputStream is = null;
-            try {
-                //is = new FileInputStream(vehicle.getImageUrl());
-                is = new FileInputStream(file.getAbsolutePath());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            Image image= new Image(is);
-            //File file = new File(vehicle.getImageUrl());
-            long filesizeMB= file.length() / 1024 / 1024;
-            String url = "";
-            if(image.getHeight()<500 || image.getWidth()<500){
-                Alert alert=new Alert(Alert.AlertType.WARNING,"Image is too small. \nIt must be at least 500x500.");
-                alert.showAndWait();
-                url = "src\\main\\resources\\Images\\noImageCar.jpeg";
-                //vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
-                //tf_imageUrl.setText("No-Image-Placeholder.jpg");
-            }
-            if(filesizeMB >= 5){
-                Alert alert=new Alert(Alert.AlertType.WARNING,"Image is too big. Maximum is 5MB.");
-                alert.showAndWait();
-                url = "src\\main\\resources\\Images\\noImageCar.jpeg";
-                //vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
-                //tf_imageUrl.setText("No-Image-Placeholder.jpg");
-            }
-            try {
-                if (url.equals("")) {
-                    iv_image.setImage(new Image(new FileInputStream(file.getAbsolutePath())));
-                } else {
-                    iv_image.setImage(new Image(new FileInputStream(url)));
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            try {
-                File file2 = new File("src\\main\\resources\\Images\\" + file.getName());
-                if (file.getName().compareTo(file2.getName()) != 0) {
-                    Files.copy(file.toPath(), file2.toPath());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            /*tf_image.setText(file.getPath());
-            imageName = file.getName();
-            InputStream is = null;
-            try {
-                is = new FileInputStream(tf_image.getText());
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            //Image image = new Image("src\\main\\resources\\Images\\" + tf_image.getText());
-            Image image = new Image(is);
-            long imagelength = (file.length()/1024)/1024;
-
-            if(image.getHeight()<500 || image.getWidth()<500){
-                Alert alert=new Alert(Alert.AlertType.WARNING,"Image is too small. \nIt must be at least 500x500.");
-                tf_image.setText("");
-                alert.showAndWait();
-            }
-            if(imagelength>=5){
-                Alert alert=new Alert(Alert.AlertType.WARNING,"Image is too big. Maximum is 5MB.");
-                tf_image.setText("");
-                alert.showAndWait();
-            }*/
-
-            //image= new Image("src\\main\\resources\\Images\\" + tf_image.getText());
-            //iv_image.setImage(image);
-        }
-
+    public TextField getTf_description() {
+        return tf_description;
     }
 
-    /*private static void copyFile(File source, File dest) throws IOException {
-        Files.copy(source.toPath(), dest.toPath());
-    }*/
-
-    @FXML
-    void editButtonCliked(ActionEvent event) throws DAOException {
-
-        try {
-            vehicle.setModel(tf_model.getText());
-            vehicle.setConstructionYear(Integer.parseInt(tf_constructionYear.getText()));
-            vehicle.setDescription(tf_description.getText());
-            vehicle.setSeating((Integer.parseInt(tf_seating.getText().isEmpty() ? "0" : tf_seating.getText())));
-            vehicle.setPowerUnit(rb_brawn.isSelected() ? "Brawn" : "Motorized");
-            vehicle.setDriverLicense(handleOptions(cb_licenseA, cb_licenseB, cb_licenseC));
-            vehicle.setPlateNumber(tf_plateNumber.getText());
-            vehicle.setPower(Integer.parseInt(tf_power.getText().isEmpty() ? "0" : tf_power.getText()));
-            vehicle.setBasePrice(Integer.parseInt(tf_basePrice.getText()));
-            if (file == null){
-                vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
-            }else {
-                vehicle.setImageUrl(file.getAbsolutePath());
-            }
-
-            check();
-            service.update(vehicle);
-
-            /*if(tf_image.getText().isEmpty()){
-                vehicle.setImageUrl("src\\main\\resources\\Images\\noImageCar.jpeg");
-            } else {
-                try {
-                    copyFile(new File(tf_image.getText()), new File("src\\main\\resources\\Images\\" + imageName));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                vehicle.setImageUrl("src\\main\\resources\\Images\\" + imageName);
-            }*/
-
-        } catch (NumberFormatException e){
-            Alert alertError = new Alert(Alert.AlertType.ERROR, "enter in the correct format " + e, ButtonType.OK);
-            alertError.showAndWait();
-        }catch (UIException e){
-            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-            alertError.showAndWait();
-        } catch (DAOException e) {
-            e.printStackTrace();
-        }
-        //tf_image.setText("C:\\Users\\Ismail\\Desktop\\SEPM\\sepm-individual-assignment-java\\src\\main\\resources\\Images\\noImageCar.png");
-
-        controller.loadTable();
-
+    public TextField getTf_seating() {
+        return tf_seating;
     }
 
-
-    @FXML
-    void bookingButtonCliked(ActionEvent event) {
-
+    public TextField getTf_basePrice() {
+        return tf_basePrice;
     }
 
-    @FXML
-    void deleteButtonCliked(ActionEvent event) {
-        try {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete this vehicle?");
-            Optional<ButtonType> buttonType = alert.showAndWait();
-            if (buttonType.get() == ButtonType.OK) {
-                service.delete(vehicle);
-                controller.loadTable();
-                controller.exit();
-            }
-        } catch (DAOException e) {
-            e.printStackTrace();
-        }
-
+    public TextField getTf_power() {
+        return tf_power;
     }
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        if (vehicle != null) {
-            setEditTable(vehicle);
-        }
+    public TextField getTf_plateNumber() {
+        return tf_plateNumber;
+    }
+
+    public RadioButton getRb_motorized() {
+        return rb_motorized;
+    }
+
+    public RadioButton getRb_brawn() {
+        return rb_brawn;
+    }
+
+    public CheckBox getCb_licenseA() {
+        return cb_licenseA;
+    }
+
+    public CheckBox getCb_licenseB() {
+        return cb_licenseB;
+    }
+
+    public CheckBox getCb_licenseC() {
+        return cb_licenseC;
+    }
+
+    public Label getLb_createDate() {
+        return lb_createDate;
+    }
+
+    public Label getLb_edtDate(){
+        return lb_edtDate;
     }
 }

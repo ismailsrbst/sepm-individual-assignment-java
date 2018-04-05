@@ -1,8 +1,10 @@
 package at.ac.tuwien.sepm.assignment.individual.main.persistence;
 
+import at.ac.tuwien.sepm.assignment.individual.main.entities.SearchFilter;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 import at.ac.tuwien.sepm.assignment.individual.main.util.DBUtil;
+import org.apache.commons.beanutils.converters.SqlDateConverter;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -96,6 +98,98 @@ public class VehicleDAOImp implements VehicleDAO {
             throw new DAOException("Vehicle not deleted.\n" + e);
         }
         return vehicle;
+    }
+
+    @Override
+    public List<Vehicle> search(SearchFilter searchFilter) {
+        List<Vehicle> vehicleList = new ArrayList<>();
+        try {
+            System.out.println(getSqlQueryForFilter(searchFilter));
+            PreparedStatement psmt = connection.prepareStatement(getSqlQueryForFilter(searchFilter));
+            ResultSet rs = psmt.executeQuery();
+            while (rs.next()){
+                vehicleList.add(getVehicleResultSet(rs));
+            }
+        } catch (SQLException e){
+
+        }
+        return vehicleList;
+    }
+
+    private Vehicle getVehicleResultSet(ResultSet rs)    {
+        Vehicle vehicle = new Vehicle();
+        try {
+            vehicle.setVid(rs.getInt("vid"));
+            vehicle.setModel(rs.getString("model"));
+            vehicle.setConstructionYear(rs.getInt("constructionYear"));
+            vehicle.setDescription(rs.getString("description"));
+            vehicle.setSeating(rs.getInt("seating"));
+            vehicle.setPlateNumber(rs.getString("plateNumber"));
+            vehicle.setDriverLicense(rs.getString("driverLicense"));
+            vehicle.setPowerUnit(rs.getString("powerUnit"));
+            vehicle.setPower(rs.getInt("power"));
+            vehicle.setBasePrice(rs.getInt("basePrice"));
+            vehicle.setCreateDate(rs.getTimestamp("createDate"));
+            vehicle.setImageUrl(rs.getString("imageUrl"));
+            vehicle.setEditDate(rs.getTimestamp("editDate"));
+            vehicle.setisDeleted(rs.getBoolean("isDeleted"));
+        } catch (SQLException e){
+
+        }
+
+
+        return vehicle;
+    }
+
+    private String getSqlQueryForFilter(SearchFilter searchFilter){
+        String query = "SELECT * FROM Vehicle WHERE isDeleted = FALSE";
+        List<String> querys = new ArrayList<>();
+        String tmp = "";
+
+        if (!searchFilter.getModel().equals("") && searchFilter.getModel() != null){
+            querys.add("UPPER(model) LIKE UPPER('%" + searchFilter.getModel() + "%')");
+        }
+        if (searchFilter.getPower() != null && !searchFilter.getPower().equals("")){
+            querys.add("powerUnit = '" + searchFilter.getPower() + "'");
+        }
+        if (searchFilter.getSeating() != null && searchFilter.getSeating() != 0){
+            querys.add("seating = " + searchFilter.getSeating() + " ");
+        }
+        if (searchFilter.getMinPrice() != null && searchFilter.getMaxPrice() != null && searchFilter.getMinPrice() != 0 && searchFilter.getMaxPrice() != 999){
+            querys.add("basePrice >= " + searchFilter.getMinPrice() + " AND basePrice <= " + searchFilter.getMaxPrice());
+        }
+        if (!searchFilter.getDriverLicense().equals("") && searchFilter.getDriverLicense() != null){
+            querys.add("driverLicense LIKE '%" + searchFilter.getDriverLicense() + "%'");
+        }
+        if (searchFilter.getStartDate() != null && searchFilter.getEndDate() != null){
+            /*tmp += " vid NOT IN (SELECT vid FROM BookingVehicle WHERE EXISTS " +
+                                "(SELECT bid FROM Booking WHERE BookingVehicle.bid = Booking.bid AND " +
+                "(beginnDate >= '" +searchFilter.getStartDate() + "' AND beginnDate <= '"+searchFilter.getEndDate()+ "') " +
+                "OR (endDate >= '"+ searchFilter.getStartDate()+ "' AND endDate <= '" +searchFilter.getEndDate() +"') " +
+                "OR (beginnDate <= '"+searchFilter.getStartDate()+"' AND endDate >= '"+searchFilter.getEndDate()+"'))) ";
+            */
+            tmp += " vid NOT IN (SELECT vid FROM BookingVehicle LEFT JOIN Booking ON BookingVehicle.bid = Booking.bid WHERE " +
+                "(beginnDate >= '" +searchFilter.getStartDate() + "' AND beginnDate <= '"+searchFilter.getEndDate()+ "') " +
+                "OR (endDate >= '"+ searchFilter.getStartDate()+ "' AND endDate <= '" +searchFilter.getEndDate() +"') " +
+                "OR (beginnDate <= '"+searchFilter.getStartDate()+"' AND endDate >= '"+searchFilter.getEndDate()+"')) ";
+            querys.add(tmp);
+        } else if (searchFilter.getEndDate() == null && searchFilter.getStartDate() != null){
+            tmp += " vid NOT IN (SELECT vid FROM BookingVehicle LEFT JOIN Booking ON BookingVehicle.bid = Booking.bid WHERE " +
+                "beginnDate >= '" + searchFilter.getStartDate() + "')";
+            querys.add(tmp);
+        } else if (searchFilter.getStartDate() == null && searchFilter.getEndDate() != null){
+            tmp += tmp += " vid NOT IN (SELECT vid FROM BookingVehicle LEFT JOIN Booking ON BookingVehicle.bid = Booking.bid WHERE " +
+                "endDate <= '" + searchFilter.getEndDate() + "')";
+            querys.add(tmp);
+        }
+        if (!querys.isEmpty()){
+            for (String s : querys) {
+                query += " AND " + s;
+            }
+            querys.clear();
+        }
+
+        return query;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package at.ac.tuwien.sepm.assignment.individual.main.persistence;
 
+import at.ac.tuwien.sepm.assignment.individual.main.entities.SearchFilter;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 
@@ -12,6 +13,8 @@ public interface VehicleDAO {
     List<Vehicle> getAllVehichle() throws DAOException;
 
     Vehicle delete(Vehicle vehicle) throws DAOException;
+
+    List<Vehicle> search(SearchFilter searchFilter);
 
     public Vehicle update(Vehicle vehicle) throws DAOException;
 }

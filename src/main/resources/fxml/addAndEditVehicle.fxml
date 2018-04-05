@@ -37,7 +37,7 @@
       <CheckBox fx:id="cb_licenseC" layoutX="339.0" layoutY="236.0" mnemonicParsing="false" text="License C" />
       <Button fx:id="bt_add" layoutX="355.0" layoutY="481.0" mnemonicParsing="false" onAction="#addButtonCliked" text="Add" />
       <Button fx:id="bt_edit" layoutX="314.0" layoutY="481.0" mnemonicParsing="false" onAction="#editButtonCliked" text="Edit" />
-      <Button layoutX="105.0" layoutY="528.0" mnemonicParsing="false" onAction="#selectImageButtonCliked" text="Select Image" />
+      <Button fx:id="bt_selectImage" layoutX="105.0" layoutY="528.0" mnemonicParsing="false" onAction="#selectImageButtonCliked" text="Select Image" />
       <ImageView fx:id="iv_image" fitHeight="126.0" fitWidth="200.0" layoutX="47.0" layoutY="390.0" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@../Images/noImageCar.jpeg" />
@@ -46,5 +46,7 @@
       <TextField fx:id="tf_plateNumber" layoutX="168.0" layoutY="275.0" />
       <Button fx:id="bt_booking" layoutX="337.0" layoutY="516.0" mnemonicParsing="false" onAction="#bookingButtonCliked" text="Booking" />
       <Button fx:id="bt_delete" layoutX="277.0" layoutY="516.0" mnemonicParsing="false" onAction="#deleteButtonCliked" text="Delete" />
+      <Label fx:id="lb_createDate" ellipsisString="" layoutX="247.0" layoutY="397.0" />
+      <Label fx:id="lb_edtDate" ellipsisString="" layoutX="247.0" layoutY="424.0" prefHeight="17.0" prefWidth="60.0" />
    </children>
 </AnchorPane>
