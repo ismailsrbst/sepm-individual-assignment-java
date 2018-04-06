@@ -9,7 +9,16 @@ import java.util.List;
 
 public interface BookingVehicleDAO {
 
-    BookingVehicle create(BookingVehicle bookingVehicle) throws SQLException;
-
+    /**create new bookingVehicle
+     * @param bookingVehicle
+     * @return bookingVehicle with generated number
+     * @throws DAOException
+     */
+    BookingVehicle create(BookingVehicle bookingVehicle) throws DAOException;
+    /**loading list of bookingVehicle
+     * @param booking
+     * @return all bookingVehicle same bookingId from database
+     * @throws DAOException
+     */
     List<BookingVehicle> getBookingVehicleByBooking(Booking booking) throws DAOException;
 }

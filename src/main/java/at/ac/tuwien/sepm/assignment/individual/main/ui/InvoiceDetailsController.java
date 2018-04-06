@@ -2,18 +2,22 @@ package  at.ac.tuwien.sepm.assignment.individual.main.ui;
 
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Booking;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.BookingVehicle;
+import at.ac.tuwien.sepm.assignment.individual.main.entities.Status;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
+import at.ac.tuwien.sepm.assignment.individual.main.exception.ServiceException;
+import at.ac.tuwien.sepm.assignment.individual.main.persistence.BookingDAOImp;
 import at.ac.tuwien.sepm.assignment.individual.main.service.BookingService;
 import at.ac.tuwien.sepm.assignment.individual.main.service.BookingVehicleService;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.util.converter.TimeStringConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URL;
 import java.sql.Time;
@@ -24,31 +28,51 @@ import java.util.ResourceBundle;
 public class InvoiceDetailsController implements Initializable {
 
     @FXML
-    private TableView<BookingVehicle> tv_invoiceDetails;
+    private TextField tf_customerName;
 
     @FXML
-    private Label lb_totalPrice;
+    private TextField tf_startDate;
+
+    @FXML
+    private TextField tf_payNember;
+
+    @FXML
+    private TextField tf_totalPrice;
+
+    @FXML
+    private TextField tf_endDate;
+
+    @FXML
+    private TextField tf_createDate;
+
+    @FXML
+    private TableView<BookingVehicle> tv_editBooking;
+
+    @FXML
+    private TableColumn<BookingVehicle, String> tc_model;
+
+    @FXML
+    private TableColumn<BookingVehicle, Integer> tc_price;
 
     @FXML
     private Label lb_invoiceNumber;
 
     @FXML
-    private Label lb_status;
-
-    @FXML
     private Label lb_invoiceDate;
 
     @FXML
-    private Label lb_startDate;
+    private TextField tf_invoiceDate;
 
     @FXML
-    private Label lb_endDate;
+    private TextField tf_invoiceNumber;
 
     @FXML
-    private TableColumn<BookingVehicle, String> tc_vehicle;
+    private Button bt_deleteVehicle;
 
     @FXML
-    private TableColumn<BookingVehicle, Integer> tc_price;
+    private Button bt_edit;
+
+    private final static Logger logger = LoggerFactory.getLogger(InvoiceDetailsController.class);
 
     private MainWindowController controller;
     private BookingVehicleService bookingVehicleService;
@@ -66,27 +90,69 @@ public class InvoiceDetailsController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         try {
             ObservableList<BookingVehicle> bookingVehicles = FXCollections.observableArrayList(bookingVehicleService.getBookingVehicleByBooking(booking));
-            /*tc_invoiceNumber.setCellValueFactory(new PropertyValueFactory<Booking, Integer>("invoiceNumber"));
-            tc_status.setCellValueFactory(new PropertyValueFactory<Booking, String>("status"));
-            tc_startDate.setCellValueFactory(new PropertyValueFactory<Booking, Timestamp>("beginnDate"));
-            tc_endDate.setCellValueFactory(new PropertyValueFactory<Booking, Timestamp>("endDate"));
-            tc_invoiceTime.setCellValueFactory(new PropertyValueFactory<Booking, Timestamp>("invoiceDate"));*/
-            tc_vehicle.setCellValueFactory(new PropertyValueFactory<BookingVehicle, String >("model"));
+
+            tc_model.setCellValueFactory(new PropertyValueFactory<BookingVehicle, String >("model"));
             tc_price.setCellValueFactory(new PropertyValueFactory<BookingVehicle, Integer>("basePrice"));
 
-            tv_invoiceDetails.setItems(bookingVehicles);
+            tv_editBooking.setItems(bookingVehicles);
+            tv_editBooking.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
 
-            lb_invoiceNumber.setText("Invoice Number: " + booking.getInvoiceNumber());
-            lb_status.setText("Status: " + booking.getStatus());
-            lb_startDate.setText("Start Date: " + booking.getBeginnDate());
-            lb_endDate.setText("End Date: " + booking.getEndDate());
-            lb_invoiceDate.setText("Invoice Date: " + booking.getInvoiceDate());
-            lb_totalPrice.setText("Total Price: " + booking.getTotalPrice());
-
-
-        } catch (DAOException e) {
-            e.printStackTrace();
+            tf_customerName.setText(booking.getCustomerName());
+            tf_payNember.setText(booking.getPayNumber());
+            tf_startDate.setText(booking.getBeginnDate().toString());
+            tf_endDate.setText(booking.getEndDate().toString());
+            tf_totalPrice.setText(booking.getTotalPrice()+"");
+            tf_createDate.setText(booking.getCreateDate().toString());
+            if (booking.getStatus() != Status.OPEN) {
+                tf_invoiceDate.setText(booking.getInvoiceDate().toString());
+                tf_invoiceNumber.setText(booking.getInvoiceNumber() + "");
+            }
+        } catch (ServiceException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
         }
+    }
 
+    @FXML
+    void deleteVehicleButtonCliked(ActionEvent event) {
+
+    }
+
+    @FXML
+    void editButtonCliked(ActionEvent event) {
+
+    }
+
+    public TextField getTf_customerName() {
+        return tf_customerName;
+    }
+
+    public TextField getTf_payNember() {
+        return tf_payNember;
+    }
+
+    public TextField getTf_invoiceDate() {
+        return tf_invoiceDate;
+    }
+
+    public TextField getTf_invoiceNumber() {
+        return tf_invoiceNumber;
+    }
+
+    public Label getLb_invoiceDate() {
+        return lb_invoiceDate;
+    }
+
+    public Label getLb_invoiceNumber() {
+        return lb_invoiceNumber;
+    }
+
+    public Button getBt_edit() {
+        return bt_edit;
+    }
+
+    public Button getBt_deleteVehicle() {
+        return bt_deleteVehicle;
     }
 }

@@ -25,35 +25,53 @@ public class VehicleServiceImp implements VehicleService {
     }
 
     @Override
-    public Vehicle create(Vehicle vehicle) throws DAOException, ServiceException {
-        vehicle.setCreateDate(currentTime());
-        return vehicleDAO.create(vehicle);
-    }
-
-    @Override
-    public Vehicle update(Vehicle vehicle) throws DAOException{
-        vehicle.setEditDate(currentTime());
-        return vehicleDAO.update(vehicle);
-    }
-
-    @Override
-    public List<Vehicle> search(SearchFilter searchFilter){
-        return vehicleDAO.search(searchFilter);
-    }
-
-    @Override
-    public Vehicle delete(Vehicle vehicle) throws DAOException {
-        return vehicleDAO.delete(vehicle);
-    }
-
-    @Override
-    public List<Vehicle> getAllVehicleList() throws DAOException {
-        List<Vehicle> vehicleList = new ArrayList<Vehicle>();
-
-        for (Vehicle vehicle : vehicleDAO.getAllVehichle()){
-            vehicleList.add(vehicle);
+    public Vehicle create(Vehicle vehicle) throws  ServiceException {
+        try {
+            vehicle.setCreateDate(currentTime());
+            return vehicleDAO.create(vehicle);
+        } catch (DAOException e){
+            throw new ServiceException("Vehicle not created.\n" + e);
         }
-        return vehicleList;
+
+    }
+
+    @Override
+    public Vehicle update(Vehicle vehicle) throws ServiceException{
+        try {
+            vehicle.setEditDate(currentTime());
+            return vehicleDAO.update(vehicle);
+        } catch (DAOException e){
+            throw new ServiceException("Vehicle not updated.\n" + e);
+        }
+    }
+
+    @Override
+    public List<Vehicle> search(SearchFilter searchFilter) throws ServiceException{
+        try {
+            return vehicleDAO.search(searchFilter);
+        } catch (DAOException e){
+            throw new ServiceException("can't load filtered vehicle.\n" + e);
+        }
+
+    }
+
+    @Override
+    public Vehicle delete(Vehicle vehicle) throws ServiceException {
+        try {
+            return vehicleDAO.delete(vehicle);
+        } catch (DAOException e){
+            throw new ServiceException("Vehicle not deleted.\n" + e);
+        }
+
+    }
+
+    @Override
+    public List<Vehicle> getAllVehicleList() throws ServiceException {
+        try {
+            return vehicleDAO.getAllVehichle();
+        } catch (DAOException e){
+            throw new ServiceException("can't load vehicle.\n" + e);
+        }
     }
 
 }

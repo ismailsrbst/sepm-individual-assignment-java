@@ -2,6 +2,7 @@ package at.ac.tuwien.sepm.assignment.individual.application;
 
 import at.ac.tuwien.sepm.assignment.individual.main.entities.BookingVehicle;
 import at.ac.tuwien.sepm.assignment.individual.main.service.*;
+import at.ac.tuwien.sepm.assignment.individual.main.ui.BookingVehicleController;
 import at.ac.tuwien.sepm.assignment.individual.main.ui.MainWindowController;
 import at.ac.tuwien.sepm.assignment.individual.main.util.DBUtil;
 import javafx.application.Application;
@@ -41,6 +42,7 @@ public final class MainApplication extends Application {
         BookingService bookingService = new BookingServiceImp();
         BookingVehicleService bookingVehicleService = new BookingVehicleServiceImp();
         MainWindowController mainWindowController = new MainWindowController(vehicleService, bookingService, bookingVehicleService);
+        //BookingVehicleController bookingVehicleController = new BookingVehicleController(mainWindowController);
 
         // prepare fxml loader to inject controller
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/mainWindow.fxml"));

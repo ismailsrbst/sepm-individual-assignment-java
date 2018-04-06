@@ -1,11 +1,11 @@
 package at.ac.tuwien.sepm.assignment.individual.main.persistence;
 
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Booking;
-import at.ac.tuwien.sepm.assignment.individual.main.entities.BookingVehicle;
-import at.ac.tuwien.sepm.assignment.individual.main.entities.PayTyp;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Status;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 import at.ac.tuwien.sepm.assignment.individual.main.util.DBUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import java.util.List;
 
 public class BookingDAOImp implements BookingDAO {
 
+    private final static Logger logger = LoggerFactory.getLogger(BookingDAOImp.class);
     private Connection connection = null;
     private String sqlQuery = "";
 
@@ -24,11 +25,9 @@ public class BookingDAOImp implements BookingDAO {
     public Booking create(Booking booking) throws DAOException {
         this.sqlQuery = "INSERT INTO Booking(customerName,payNumber,beginnDate,endDate,createDate,totalPrice," +
             "editDate,invoiceDate,invoiceNumber,status) Values (?,?,?,?,?,?,?,?,?,?)";
-
+        logger.debug("creating new booking");
         try {
-
             PreparedStatement psmt = connection.prepareStatement(sqlQuery, Statement.RETURN_GENERATED_KEYS);
-
             psmt.setString(1, booking.getCustomerName());
             psmt.setString(2, booking.getPayNumber());
             psmt.setTimestamp(3, booking.getBeginnDate());
@@ -40,7 +39,6 @@ public class BookingDAOImp implements BookingDAO {
             psmt.setTimestamp(8, booking.getInvoiceDate());
             psmt.setInt(9, booking.getInvoiceNumber());
             psmt.setString(10,"OPEN");
-            //psmt.setString(10, booking.getStatus() == Status.OPEN ? "OPEN" : booking.getStatus() == Status.CANCELED ? "CANCELED" : "COMPLETED");
             psmt.executeUpdate();
 
             ResultSet generatedKeys = psmt.getGeneratedKeys();
@@ -48,27 +46,33 @@ public class BookingDAOImp implements BookingDAO {
             booking.setBid(generatedKeys.getInt(1));
 
         }catch (SQLException e){
-            throw new DAOException("");
+            logger.error(e.getMessage());
+            throw new DAOException("Booking not created.\n"+e);
         }
-
         return booking;
     }
 
     @Override
-    public Booking delete(Booking booking) {
+    public Booking delete(Booking booking) throws DAOException {
         this.sqlQuery = "DELETE FROM BookingVehicle WHERE bid IN (SELECT bid FROM Booking WHERE bid = " + booking.getBid() + ")";
 
+        logger.debug("deleting bookingVehicle");
         try {
             PreparedStatement psmt = connection.prepareStatement(this.sqlQuery);
             psmt.executeUpdate();
         } catch (SQLException e){
+            logger.error(e.getMessage());
 
+            throw new DAOException("BookingVehicle not deleted.\n"+e);
         }
         this.sqlQuery = "DELETE FROM Booking WHERE bid = " + booking.getBid();
+        logger.debug("deleting booking");
         try {
             PreparedStatement psmt = connection.prepareStatement(this.sqlQuery);
             psmt.executeUpdate();
         } catch (SQLException e){
+            logger.error(e.getMessage());
+            throw new DAOException("Booking not deleted.\n"+e);
 
         }
         return booking;
@@ -76,14 +80,19 @@ public class BookingDAOImp implements BookingDAO {
 
     @Override
     public Booking cancel(Booking booking) throws DAOException {
-        this.sqlQuery = "UPDATE Booking SET status = ?, totalPrice = ? WHERE bid = " + booking.getBid();
+        this.sqlQuery = "UPDATE Booking SET status = ?, totalPrice = ?, invoiceDate = ?, invoiceNumber = ? WHERE bid = " + booking.getBid();
+
+        logger.debug("updating booking: status = CANCEL");
         try {
             PreparedStatement psmt = connection.prepareStatement(this.sqlQuery);
             psmt.setString(1, "CANCELED");
             psmt.setInt(2, booking.getTotalPrice());
+            psmt.setTimestamp(3, booking.getInvoiceDate());
+            psmt.setInt(4, booking.getInvoiceNumber());
             psmt.executeUpdate();
 
         } catch (SQLException e) {
+            logger.error(e.getMessage());
             throw new DAOException("Booking not canceled.\n" + e);
         }
         return booking;
@@ -92,6 +101,8 @@ public class BookingDAOImp implements BookingDAO {
     @Override
     public Booking completed(Booking booking) throws DAOException {
         this.sqlQuery = "UPDATE Booking SET status = ?, invoiceDate = ?, invoiceNumber = ? WHERE bid = " + booking.getBid();
+        logger.debug("updating booking status = COPMLETED");
+
         try {
             PreparedStatement psmt = connection.prepareStatement(this.sqlQuery);
             psmt.setString(1, "COMPLETED");
@@ -100,6 +111,7 @@ public class BookingDAOImp implements BookingDAO {
             psmt.executeUpdate();
 
         } catch (SQLException e) {
+            logger.error(e.getMessage());
             throw new DAOException("Booking not completed.\n" + e);
         }
         return booking;
@@ -109,6 +121,8 @@ public class BookingDAOImp implements BookingDAO {
     public List<Booking> getAllBooking() throws DAOException {
         List<Booking> bookingList = new ArrayList<Booking>();
         this.sqlQuery = "SELECT * FROM Booking ORDER BY beginnDate DESC";
+
+        logger.debug("loading booking");
 
         try {
             PreparedStatement psmt = connection.prepareStatement(sqlQuery);
@@ -132,7 +146,8 @@ public class BookingDAOImp implements BookingDAO {
             }
 
         } catch (SQLException e){
-            throw new DAOException("can't load booking.");
+            logger.error(e.getMessage());
+            throw new DAOException("can't load booking."+e);
         }
         return bookingList;
     }

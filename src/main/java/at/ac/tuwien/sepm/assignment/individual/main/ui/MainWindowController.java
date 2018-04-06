@@ -2,7 +2,9 @@ package at.ac.tuwien.sepm.assignment.individual.main.ui;
 
 import at.ac.tuwien.sepm.assignment.individual.main.entities.*;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
+import at.ac.tuwien.sepm.assignment.individual.main.exception.ServiceException;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.UIException;
+import at.ac.tuwien.sepm.assignment.individual.main.persistence.BookingDAOImp;
 import at.ac.tuwien.sepm.assignment.individual.main.service.BookingService;
 import at.ac.tuwien.sepm.assignment.individual.main.service.BookingVehicleService;
 import at.ac.tuwien.sepm.assignment.individual.main.service.VehicleService;
@@ -20,6 +22,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseEvent;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.validator.routines.CreditCardValidator;
@@ -34,10 +37,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainWindowController implements Initializable{
@@ -167,6 +167,7 @@ public class MainWindowController implements Initializable{
     @FXML
     private Label lb_driverLicense;
 
+    private final static Logger logger = LoggerFactory.getLogger(MainWindowController.class);
     private final VehicleService vehicleService;
     private final BookingService bookingService;
     private final BookingVehicleService bookingVehicleService;
@@ -197,8 +198,10 @@ public class MainWindowController implements Initializable{
         try {
             loadTable();
             loadBooking();
-        } catch (DAOException e) {
-            e.printStackTrace();
+        } catch (ServiceException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
         }
 
         checkNumberFormat(tf_basePriceMax);
@@ -237,7 +240,7 @@ public class MainWindowController implements Initializable{
         });
     }
 
-    public void loadBooking() throws DAOException{
+    public void loadBooking() throws ServiceException{
         ObservableList<Booking> bookings = FXCollections.observableArrayList(bookingService.getAllBooking());
         tc_customerName.setCellValueFactory(new PropertyValueFactory<Booking, String>("customerName"));
         tc_beginnDate.setCellValueFactory(new PropertyValueFactory<Booking, Timestamp>("beginnDate"));
@@ -246,10 +249,10 @@ public class MainWindowController implements Initializable{
         tc_totalPrice.setCellValueFactory(new PropertyValueFactory<Booking, Integer>("totalPrice"));
 
         tv_booking.setItems(bookings);
-        tv_booking.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        tv_booking.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
     }
 
-    public void loadTable() throws DAOException {
+    public void loadTable() throws ServiceException {
         ObservableList<Vehicle> vehicles = FXCollections.observableArrayList(vehicleService.getAllVehicleList());
         tc_model.setCellValueFactory(new PropertyValueFactory<Vehicle,String>("model"));
         tc_license.setCellValueFactory(new PropertyValueFactory<Vehicle,String>("driverLicense"));
@@ -279,47 +282,74 @@ public class MainWindowController implements Initializable{
     }
 
     @FXML
-    void addButtonCliked(ActionEvent event) throws IOException {
+    void addButtonCliked(ActionEvent event) {
 
-        AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService);
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
-        fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        stage = new Stage();
-        stage.setTitle("Add Vehicle");
-        addAndEditVehicleController.getBt_edit().setVisible(false);
-        addAndEditVehicleController.getBt_booking().setVisible(false);
-        addAndEditVehicleController.getBt_delete().setVisible(false);
-        stage.setScene(scene);
-        stage.show();
+        try {
+            AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService);
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
+            fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
+            Parent root = fxmlLoader.load();
+            Scene scene = new Scene(root);
+            stage = new Stage();
+            stage.setTitle("Add Vehicle");
+            addAndEditVehicleController.getBt_edit().setVisible(false);
+            addAndEditVehicleController.getBt_booking().setVisible(false);
+            addAndEditVehicleController.getBt_delete().setVisible(false);
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, "can not load fxmlfile.\n"+e, ButtonType.OK);
+            alertError.showAndWait();
+        }
+
     }
 
     @FXML
-    void deleteButtonClicked(ActionEvent event) throws DAOException {
-        List<Vehicle> vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
-        if (!vehicleList.isEmpty()){
-            for (Vehicle vehicle : vehicleList){
-                if (vehicle != null){
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete "+vehicle.getModel()+" ?");
-                    Optional<ButtonType> buttonType = alert.showAndWait();
-                    if (buttonType.get() == ButtonType.OK) {
-                        vehicleService.delete(vehicle);
+    void deleteButtonClicked(ActionEvent event) {
+        try {
+            List<Vehicle> vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
+            if (!vehicleList.isEmpty()){
+                for (Vehicle vehicle : vehicleList){
+                    if (vehicle != null){
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Are you sure you want to delete "+vehicle.getModel()+" ?");
+                        Optional<ButtonType> buttonType = alert.showAndWait();
+                        if (buttonType.get() == ButtonType.OK) {
+                            vehicleService.delete(vehicle);
+                        }
                     }
                 }
+                this.loadTable();
             }
-            this.loadTable();
+        } catch (ServiceException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
         }
+
     }
 
     @FXML
-    void editButtonClicked(ActionEvent event) throws IOException {
-
-        List<Vehicle> vehicleList = new ArrayList<Vehicle>();
-        vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
-
+    void editButtonClicked(ActionEvent event) {
+        try {
+            Vehicle vehicle = tv_vehicle.getSelectionModel().getSelectedItem();
+            AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService, vehicle);
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
+            fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
+            Parent root = fxmlLoader.load();
+            Scene scene = new Scene(root);
+            stage = new Stage();
+            stage.setTitle("Edit Vehicle");
+            stage.setScene(scene);
+            addAndEditVehicleController.getBt_add().setVisible(false);
+            stage.show();
+        } catch (IOException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, "can not load fxmlfile.\n"+e, ButtonType.OK);
+            alertError.showAndWait();
+        }
+        /*List<Vehicle> vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
         //Vehicle vehicle = tv_vehicle.getSelectionModel().getSelectedItem();
-
         if (vehicleList.size() == 1){
             for (Vehicle vehicle : vehicleList) {
                 AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService, vehicle);
@@ -334,20 +364,19 @@ public class MainWindowController implements Initializable{
                 stage.show();
 
             }
-            //TODO else kismina popup koy
-        }
+        }*/
     }
 
+    //TODO bakilacak
     private void checkDate() throws UIException {
-
         if (dp_beginnBooking.getValue() != null ) {
             Timestamp beginnDate = new Timestamp(Date.from(dp_beginnBooking.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
             Timestamp currentTime = new Timestamp(System.currentTimeMillis());
             if (currentTime.after(beginnDate)) {
-                throw new UIException("Enter date correctly.");
+                throw new UIException("Start date can not be before current date.");
             }
         } else if (dp_endBooking.getValue() != null && dp_beginnBooking.getValue().isAfter(dp_endBooking.getValue())) {
-            throw new UIException("Date can not empty");
+            throw new UIException("Start date can not be after end date");
         } else if (dp_beginnBooking.getValue() == null || dp_endBooking.getValue() == null){
             throw new UIException("Date can not empty");
         }
@@ -355,7 +384,6 @@ public class MainWindowController implements Initializable{
 
     @FXML
     void searchButtonCliked(ActionEvent event) {
-
         try {
             checkDate();
             SearchFilter searchFilter = new SearchFilter();
@@ -404,8 +432,6 @@ public class MainWindowController implements Initializable{
                 endDate.setTime(endDate.getTime() + (3600000*chb_endBookingHour.getValue()) + (6000*chb_endBookingMinute.getValue()));
                 searchFilter.setEndDate(endDate);
             }
-
-
             ObservableList<Vehicle> list = FXCollections.observableArrayList(vehicleService.search(searchFilter));
             tc_model.setCellValueFactory(new PropertyValueFactory<Vehicle,String>("model"));
             tc_license.setCellValueFactory(new PropertyValueFactory<Vehicle,String>("driverLicense"));
@@ -415,6 +441,11 @@ public class MainWindowController implements Initializable{
             tv_vehicle.setItems(list);
             tv_vehicle.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         } catch (UIException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        } catch (ServiceException e){
+            logger.error(e.getMessage());
             Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
             alertError.showAndWait();
         }
@@ -423,62 +454,80 @@ public class MainWindowController implements Initializable{
 
     @FXML
     void viewDetailsButtonClicked(ActionEvent event) {
-        List<Vehicle> vehicleList = new ArrayList<Vehicle>();
-        vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
-
-        if (vehicleList.size() == 1){
-            for (Vehicle vehicle : vehicleList) {
-                try {
-                    AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService, vehicle);
-                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
-                    fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
-                    Parent root = fxmlLoader.load();
-                    Scene scene = new Scene(root);
-                    stage = new Stage();
-                    stage.setTitle("Detail Vehicle");
-                    stage.setScene(scene);
-                    addAndEditVehicleController.getBt_add().setVisible(false);
-                    addAndEditVehicleController.getTf_model().setDisable(true);
-                    addAndEditVehicleController.getTf_basePrice().setDisable(true);
-                    addAndEditVehicleController.getTf_constructionYear().setDisable(true);
-                    addAndEditVehicleController.getTf_description().setDisable(true);
-                    addAndEditVehicleController.getTf_plateNumber().setDisable(true);
-                    addAndEditVehicleController.getTf_power().setDisable(true);
-                    addAndEditVehicleController.getTf_seating().setDisable(true);
-                    addAndEditVehicleController.getRb_brawn().setDisable(true);
-                    addAndEditVehicleController.getRb_motorized().setDisable(true);
-                    addAndEditVehicleController.getCb_licenseA().setDisable(true);
-                    addAndEditVehicleController.getCb_licenseB().setDisable(true);
-                    addAndEditVehicleController.getCb_licenseC().setDisable(true);
-                    addAndEditVehicleController.getBt_selectImage().setDisable(true);
-                    addAndEditVehicleController.getLb_createDate().setText("Create Date: " + vehicle.getCreateDate());
-                    addAndEditVehicleController.getLb_edtDate().setText("Edit Date: " + vehicle.getEditDate());
-                    stage.show();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+        try {
+            Vehicle vehicle = tv_vehicle.getSelectionModel().getSelectedItem();
+            AddAndEditVehicleController addAndEditVehicleController = new AddAndEditVehicleController(this, vehicleService, vehicle);
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/addAndEditVehicle.fxml"));
+            fxmlLoader.setControllerFactory(param -> param.isInstance(addAndEditVehicleController) ? addAndEditVehicleController : null);
+            Parent root = fxmlLoader.load();
+            Scene scene = new Scene(root);
+            stage = new Stage();
+            stage.setTitle("Detail Vehicle");
+            stage.setScene(scene);
+            addAndEditVehicleController.getBt_add().setVisible(false);
+            addAndEditVehicleController.getTf_model().setDisable(true);
+            addAndEditVehicleController.getTf_basePrice().setDisable(true);
+            addAndEditVehicleController.getTf_constructionYear().setDisable(true);
+            addAndEditVehicleController.getTf_description().setDisable(true);
+            addAndEditVehicleController.getTf_plateNumber().setDisable(true);
+            addAndEditVehicleController.getTf_power().setDisable(true);
+            addAndEditVehicleController.getTf_seating().setDisable(true);
+            addAndEditVehicleController.getRb_brawn().setDisable(true);
+            addAndEditVehicleController.getRb_motorized().setDisable(true);
+            addAndEditVehicleController.getCb_licenseA().setDisable(true);
+            addAndEditVehicleController.getCb_licenseB().setDisable(true);
+            addAndEditVehicleController.getCb_licenseC().setDisable(true);
+            addAndEditVehicleController.getBt_selectImage().setDisable(true);
+            addAndEditVehicleController.getLb_createDate().setText("Create Date: " + vehicle.getCreateDate());
+            addAndEditVehicleController.getLb_edtDate().setText("Edit Date: " + vehicle.getEditDate());
+            stage.show();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, "can not load fxmlfile.\n"+e, ButtonType.OK);
+            alertError.showAndWait();
         }
     }
 
     @FXML
-    void bookingButtonClicked(ActionEvent event) throws IOException {
-        /*List<Vehicle> vehicleList = new ArrayList<Vehicle>();
-        vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
+    void bookingButtonClicked(ActionEvent event) {
+         try {
+            List<Vehicle> vehicleList = tv_vehicle.getSelectionModel().getSelectedItems();
+            if (!vehicleList.isEmpty()) {
+                 checkDate();
+               if (dp_beginnBooking.getValue() != null && dp_endBooking.getValue() != null) {
 
-        if (!vehicleList.isEmpty()){
-            BookingVehicleController bookingVehicleController = new BookingVehicleController(this, vehicleList, bookingService);
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/bookingVehicle.fxml"));
-            fxmlLoader.setControllerFactory(param -> param.isInstance(bookingVehicleController) ? bookingVehicleController : null);
-            Parent root = fxmlLoader.load();
-            Scene scene = new Scene(root);
-            stage = new Stage();
-            stage.setTitle("Booking Vehicle");
-            stage.setScene(scene);
-            stage.show();
-        }*/
+                    Timestamp beginDate = new Timestamp(Date.from(dp_beginnBooking.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+                    Timestamp endDate = new Timestamp(Date.from(dp_endBooking.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+                    beginDate.setTime(beginDate.getTime() + (3600000 * chb_beginBookingHour.getValue()) + (60000 * chb_beginBookingMinute.getValue()));
+                    endDate.setTime(endDate.getTime() + (3600000 * chb_endBookingHour.getValue()) + (6000 * chb_endBookingMinute.getValue()));
 
-        try {
+                    BookingVehicleController bookingVehicleController = new BookingVehicleController(this, vehicleList, beginDate, endDate);
+                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/bookingVehicle.fxml"));
+                    fxmlLoader.setControllerFactory(param -> param.isInstance(bookingVehicleController) ? bookingVehicleController : null);
+                    Parent root = fxmlLoader.load();
+                    Scene scene = new Scene(root);
+                    stage = new Stage();
+                    stage.setTitle("Booking Vehicle");
+                    stage.setScene(scene);
+                    stage.initModality(Modality.APPLICATION_MODAL);
+                    stage.show();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.WARNING,"You must entry beginn and end date.");
+                    alert.showAndWait();
+                }
+            }
+        } catch (UIException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, "can not load fxmlfile.\n"+e, ButtonType.OK);
+            alertError.showAndWait();
+        }
+
+
+        /*try {
             List<Vehicle> tmp = tv_vehicle.getSelectionModel().getSelectedItems();
             checkDate();
             Timestamp beginDate = new Timestamp(Date.from(dp_beginnBooking.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
@@ -506,49 +555,65 @@ public class MainWindowController implements Initializable{
             }
         } catch (UIException e) {
 
-        }
-
+        }*/
     }
 
     @FXML
-    void cancelButtonCliked(ActionEvent event) throws DAOException {
-        Booking booking = tv_booking.getSelectionModel().getSelectedItem();
-        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-        if (booking != null && booking.getStatus().name().equals("OPEN") && booking.getBeginnDate().after(currentTime)){
-            int hour = getDifferenzTwoDateInHour(currentTime, booking.getBeginnDate());
-            if ( hour < 168 && hour >= 72){
-                booking.setTotalPrice((booking.getTotalPrice()*40)/100);
-                bookingStatusUpdate(booking, currentTime);
-            } else if (hour < 72 && hour <= 24){
-                booking.setTotalPrice((booking.getTotalPrice()*75)/100);
-                bookingStatusUpdate(booking, currentTime);
-            } else if (hour < 24){
-                Alert alert = new Alert(Alert.AlertType.WARNING,"you can not cancel. you must pay full rental.");
-                alert.showAndWait();
-            } else {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "are you sure delete this booking");
-                Optional<ButtonType> buttonType = alert.showAndWait();
-                if (buttonType.get() == ButtonType.OK) {
-                    System.out.println(booking.getBid());
-                    bookingService.delete(booking);
+    void cancelButtonCliked(ActionEvent event) {
+        try {
+            Booking booking = tv_booking.getSelectionModel().getSelectedItem();
+            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+            if (booking != null && booking.getStatus().name().equals("OPEN") && booking.getBeginnDate().after(currentTime)){
+                int hour = getDifferenzTwoDateInHour(currentTime, booking.getBeginnDate());
+                if ( hour < 168 && hour >= 72){
+                    booking.setTotalPrice((booking.getTotalPrice()*40)/100);
+                    bookingStatusUpdate(booking, currentTime);
+                } else if (hour < 72 && hour <= 24){
+                    booking.setTotalPrice((booking.getTotalPrice()*75)/100);
+                    bookingStatusUpdate(booking, currentTime);
+                } else if (hour < 24){
+                    Alert alert = new Alert(Alert.AlertType.WARNING,"you can not cancel. you must pay full rental.");
+                    alert.showAndWait();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "are you sure delete this booking");
+                    Optional<ButtonType> buttonType = alert.showAndWait();
+                    if (buttonType.get() == ButtonType.OK) {
+                        System.out.println(booking.getBid());
+                        bookingService.delete(booking);
+                    }
                 }
+                loadBooking();
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING,"can only be canceled if they are open or before the start date");
+                alert.showAndWait();
             }
-            loadBooking();
-        } else {
-            Alert alert = new Alert(Alert.AlertType.WARNING,"can only be canceled if they are open or before the start date");
-            alert.showAndWait();
+        } catch (ServiceException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        }
+    }
+
+    public void bookingStatusUpdate(Booking booking, Timestamp currentTime) {
+        try {
+            booking.setInvoiceDate(currentTime);
+            invoiceNumber = count.incrementAndGet();
+            booking.setInvoiceNumber(invoiceNumber);
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "can not be canceled for free");
+            Optional<ButtonType> buttonType = alert.showAndWait();
+            if (buttonType.get() == ButtonType.OK) {
+                bookingService.cancel(booking);
+                loadBooking();
+            }
+        } catch (ServiceException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
         }
 
     }
 
-    public void bookingStatusUpdate(Booking booking, Timestamp currentTime) throws DAOException {
-        booking.setInvoiceDate(currentTime);
-        invoiceNumber = count.incrementAndGet();
-        booking.setInvoiceNumber(invoiceNumber);
-        bookingService.cancel(booking);
-    }
-
-    private int getDifferenzTwoDateInHour(Timestamp after, Timestamp before){
+    public int getDifferenzTwoDateInHour(Timestamp after, Timestamp before){
         long milliseconds = Math.abs(after.getTime() - before.getTime());
         long seconds = milliseconds / 1000;
         int hours = (int)seconds / 3600;
@@ -556,55 +621,123 @@ public class MainWindowController implements Initializable{
     }
 
     @FXML
-    void completedButtonCliked(ActionEvent event) throws DAOException {
-        Booking booking = tv_booking.getSelectionModel().getSelectedItem();
-        Timestamp currentTime = new Timestamp(System.currentTimeMillis());
-        if (booking != null && booking.getStatus().name().equals("OPEN") && booking.getBeginnDate().before(currentTime)){
-            booking.setInvoiceDate(currentTime);
-            invoiceNumber = count.incrementAndGet();
-            booking.setInvoiceNumber(invoiceNumber);
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "can not be canceled for free");
-            Optional<ButtonType> buttonType = alert.showAndWait();
-            if (buttonType.get() == ButtonType.OK) {
-                bookingService.completed(booking);
-                loadBooking();
+    void completedButtonCliked(ActionEvent event) {
+        try {
+            Booking booking = tv_booking.getSelectionModel().getSelectedItem();
+            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+            if (booking != null && booking.getStatus().name().equals("OPEN") && booking.getBeginnDate().before(currentTime)){
+                booking.setInvoiceDate(currentTime);
+                invoiceNumber = count.incrementAndGet();
+                booking.setInvoiceNumber(invoiceNumber);
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "can not be canceled for free");
+                Optional<ButtonType> buttonType = alert.showAndWait();
+                if (buttonType.get() == ButtonType.OK) {
+                    bookingService.completed(booking);
+                    loadBooking();
+                }
+            } else {
+                Alert alert=new Alert(Alert.AlertType.WARNING,"can only be canceled if they are open or after the start date");
+                alert.showAndWait();
             }
-
-        } else {
-            Alert alert=new Alert(Alert.AlertType.WARNING,"can only be canceled if they are open or after the start date");
-            alert.showAndWait();
+        } catch (ServiceException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
         }
     }
 
     @FXML
-    void detailViewButtonCliked(ActionEvent event) throws DAOException {
+    void detailViewButtonCliked(ActionEvent event) {
         Booking booking = tv_booking.getSelectionModel().getSelectedItem();
-        List<BookingVehicle> bookingVehicle = bookingVehicleService.getBookingVehicleByBooking(booking);
+        try {
+            List<BookingVehicle> bookingVehicle = bookingVehicleService.getBookingVehicleByBooking(booking);
+        } catch (ServiceException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        }
         if (booking != null && !booking.getStatus().name().equals("OPEN")){
             try {
                 InvoiceDetailsController invoiceDetailsController = new InvoiceDetailsController(this, booking, bookingVehicle, bookingVehicleService);
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/invoiceDetails.fxml"));
+                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/editBooking.fxml"));
                 fxmlLoader.setControllerFactory(param -> param.isInstance(invoiceDetailsController) ? invoiceDetailsController : null);
                 Parent root = fxmlLoader.load();
                 Scene scene = new Scene(root);
                 stage = new Stage();
-                stage.setTitle("Detail Booking");
+                stage.setTitle("Detail Reservation");
                 stage.setScene(scene);
+                invoiceDetailsController.getTf_customerName().setDisable(true);
+                invoiceDetailsController.getTf_payNember().setDisable(true);
+                invoiceDetailsController.getTf_invoiceDate().setVisible(true);
+                invoiceDetailsController.getTf_invoiceDate().setDisable(true);
+                invoiceDetailsController.getTf_invoiceNumber().setVisible(true);
+                invoiceDetailsController.getTf_invoiceNumber().setDisable(true);
+                invoiceDetailsController.getLb_invoiceDate().setVisible(true);
+                invoiceDetailsController.getLb_invoiceNumber().setVisible(true);
+                invoiceDetailsController.getBt_edit().setVisible(false);
+                invoiceDetailsController.getBt_deleteVehicle().setVisible(false);
                 stage.show();
             } catch (IOException e) {
-                e.printStackTrace();
-            }
+                logger.error(e.getMessage());
+                Alert alertError = new Alert(Alert.AlertType.ERROR, "can not load fxmlfile.\n"+e, ButtonType.OK);
+                alertError.showAndWait();            }
         }else {
-            Alert alert=new Alert(Alert.AlertType.WARNING,"there is no detailed view of the open ones");
-            alert.showAndWait();
+            InvoiceDetailsController invoiceDetailsController = new InvoiceDetailsController(this, booking, bookingVehicle, bookingVehicleService);
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/editBooking.fxml"));
+            fxmlLoader.setControllerFactory(param -> param.isInstance(invoiceDetailsController) ? invoiceDetailsController : null);
+            Parent root = null;
+            try {
+                root = fxmlLoader.load();
+            } catch (IOException e) {
+                logger.error(e.getMessage());
+                Alert alertError = new Alert(Alert.AlertType.ERROR, "can not load fxmlfile.\n"+e, ButtonType.OK);
+                alertError.showAndWait();            }
+            Scene scene = new Scene(root);
+            stage = new Stage();
+            stage.setTitle("Detail Booking");
+            stage.setScene(scene);
+            invoiceDetailsController.getBt_edit().setVisible(false);
+            invoiceDetailsController.getBt_deleteVehicle().setVisible(false);
+            invoiceDetailsController.getTf_customerName().setDisable(true);
+            invoiceDetailsController.getTf_payNember().setDisable(true);
+            stage.show();
         }
     }
 
     @FXML
     void editBookingButtonCliked(ActionEvent event) {
+        try {
+            Booking booking = tv_booking.getSelectionModel().getSelectedItem();
+            List<BookingVehicle> bookingVehicle = bookingVehicleService.getBookingVehicleByBooking(booking);
+            if (booking != null && booking.getStatus().name().equals("OPEN")){
+                try {
+                    InvoiceDetailsController invoiceDetailsController = new InvoiceDetailsController(this, booking, bookingVehicle, bookingVehicleService);
+                    FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/editBooking.fxml"));
+                    fxmlLoader.setControllerFactory(param -> param.isInstance(invoiceDetailsController) ? invoiceDetailsController : null);
+                    Parent root = fxmlLoader.load();
+                    Scene scene = new Scene(root);
+                    stage = new Stage();
+                    stage.setTitle("Edit Booking");
+                    stage.setScene(scene);
+                    stage.show();
+                } catch (IOException e) {
+                    logger.error(e.getMessage());
+                    Alert alertError = new Alert(Alert.AlertType.ERROR, "can not load fxmlfile.\n"+e, ButtonType.OK);
+                    alertError.showAndWait();                }
+            } else {
+                Alert alertError = new Alert(Alert.AlertType.ERROR, "you can edit only open booking", ButtonType.OK);
+                alertError.showAndWait();
+            }
+        } catch (ServiceException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        }
+
 
     }
 
+    /*
     @FXML
     void finishBookingButtonClicked(ActionEvent event)  {
         //List<Vehicle> vehicleList = tv_bookingVehicle.getSelectionModel().getSelectedItems();
@@ -628,25 +761,14 @@ public class MainWindowController implements Initializable{
             booking.setInvoiceDate(null);
             booking.setInvoiceNumber(0);
 
-            if (getDifferenzTwoDateInHour(beginDate, new Timestamp(System.currentTimeMillis())) <= 168){
-                //bookingAlert();
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "can not be canceled for free");
-                Optional<ButtonType> buttonType = alert.showAndWait();
-                if (buttonType.get() == ButtonType.OK) {
-                    bookingCreate(booking);
-                }
-            }else {
-                //bookingAlert();
-                bookingCreate(booking);
-            }
-
+           bookingCreate(booking, beginDate, new Timestamp(System.currentTimeMillis()));
         } catch (UIException e) {
             Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
             alertError.showAndWait();
         }
     }
 
-    public void bookingCreate(Booking booking){
+    public void bookingCreate(Booking booking, Timestamp beginDate, Timestamp currenTime){
         try {
             if (bookingVehicle != null) {
                 for (Vehicle vehicle : listVehicle) {
@@ -654,31 +776,56 @@ public class MainWindowController implements Initializable{
                         BookingVehicle bookingVehicle1 = new BookingVehicle();
                         bookingVehicle1.setVehicle(vehicle);
                         bookingVehicle1.setLicenseCreateDate(null);
-                        bookingVehicle1.setLicenseNumber(null);
+                        bookingVehicle1.setLicenseNumber("");
                         setBookingVehicle(bookingVehicle1);
                     }
                 }
             } else {
+                System.out.println("22222222222");
                 bookingVehicle = new ArrayList<>();
                 for (Vehicle vehicle : listVehicle) {
                     if (vehicle.getDriverLicense().equals("") || vehicle.getDriverLicense().equals("B")) {
                         BookingVehicle bookingVehicle1 = new BookingVehicle();
                         bookingVehicle1.setVehicle(vehicle);
                         bookingVehicle1.setLicenseCreateDate(null);
-                        bookingVehicle1.setLicenseNumber(null);
+                        bookingVehicle1.setLicenseNumber("");
                         setBookingVehicle(bookingVehicle1);
                     }
                 }
             }
+            System.out.println("1234532143214  " + bookingVehicle.size());
             if (bookingVehicle != null && bookingVehicle.size() == listVehicle.size()) {
-                bookingService.create(booking);
+                if (getDifferenzTwoDateInHour(beginDate, new Timestamp(System.currentTimeMillis())) <= 168) {
+                    //bookingAlert();
+                    if ((cb_a.isSelected() || cb_c.isSelected()) && (tf_licenseNumber.getText().isEmpty() || dp_licenseCreateDate.getValue() == null)) {
+                        Alert alertError = new Alert(Alert.AlertType.ERROR, "you forgot write license Number and date", ButtonType.OK);
+                        alertError.showAndWait();
+                    } else if ((!cb_a.isSelected() || !cb_b.isSelected() || !cb_c.isSelected())){
+                        Alert alertError = new Alert(Alert.AlertType.ERROR, "you forgot select license", ButtonType.OK);
+                        alertError.showAndWait();
+                    } else {
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "can not be canceled for free");
+                        Optional<ButtonType> buttonType = alert.showAndWait();
+                        if (buttonType.get() == ButtonType.OK) {
+                            bookingService.create(booking);
+                        }
+                    }
+
+                } else {
+                    bookingService.create(booking);
+                }
                 for (BookingVehicle bookingVehicle1 : bookingVehicle) {
                     bookingVehicle1.setBid(booking.getBid());
+                    System.out.println(bookingVehicle1.getVehicle().getModel());
+                    System.out.println(bookingVehicle1.getLicenseCreateDate());
+                    System.out.println(bookingVehicle1.getLicenseNumber());
                     bookingVehicleService.create(bookingVehicle1);
                 }
                 tf_customerName.setText("");
                 tf_payNumber.setText("");
                 tv_bookingVehicle.setItems(null);
+                lb_startDate.setText("");
+                lb_endDate.setText("");
                 loadBooking();
             } else {
                 Alert alertError = new Alert(Alert.AlertType.ERROR, "you forgot write license Number and date", ButtonType.OK);
@@ -695,8 +842,9 @@ public class MainWindowController implements Initializable{
 
     public void bookingAlert(){
         for (Vehicle vehicle : listVehicle){
-            if (bookingVehicle != null) {
-                for (BookingVehicle bookingVehicle1 : bookingVehicle) {
+            for (BookingVehicle bookingVehicle1 : bookingVehicle) {
+                if (bookingVehicle1 != null) {
+                    System.out.println(bookingVehicle1.getModel() + bookingVehicle1.getLicenseNumber());
                     if (vehicle.getVid() == bookingVehicle1.getVehicle().getVid()) {
                         if ((vehicle.getDriverLicense().contains("A") || vehicle.getDriverLicense().contains("C")) && (bookingVehicle1.getLicenseNumber() == null || bookingVehicle1.getLicenseCreateDate() == null)) {
                             Alert alert = new Alert(Alert.AlertType.WARNING, "License number can not be empty.");
@@ -762,6 +910,8 @@ public class MainWindowController implements Initializable{
             }else {
                 boolean b = true;
                 for (BookingVehicle bookingVehicle1 : bookingVehicle) {
+                    System.out.println(vehicle.getVid() + "11111111");
+                    System.out.println(bookingVehicle1.getModel());
                     if (bookingVehicle1 != null && vehicle.getVid() == bookingVehicle1.getVehicle().getVid()) {
                         b = false;
                         setLicenseInfo(false);
@@ -808,63 +958,75 @@ public class MainWindowController implements Initializable{
     void addLicenseNumberAndDateButtonCliked(ActionEvent event) {
 
         Vehicle vehicle = tv_bookingVehicle.getSelectionModel().getSelectedItem();
-        if (tf_licenseNumber.isVisible() && dp_licenseCreateDate.isVisible()) {
-            BookingVehicle bookingVehicle1 = new BookingVehicle();
-            if (!cb_b.isSelected()) {
-                try {
-                    checkLicenseInfo();
-                    bookingVehicle1.setVehicle(vehicle);
-                    bookingVehicle1.setLicenseNumber(tf_licenseNumber.getText());
-                    Timestamp licenseCreateDate = new Timestamp(Date.from(dp_licenseCreateDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
-                    bookingVehicle1.setLicenseCreateDate(licenseCreateDate);
-
-                } catch (UIException e) {
-                    Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
-                    alertError.showAndWait();
+        if (bookingVehicle != null){
+            boolean bool = true;
+            for (BookingVehicle bookingVehicle1 : bookingVehicle){
+                if (vehicle.getVid() == bookingVehicle1.getVehicle().getVid()){
+                    bool = false;
                 }
-                setBookingVehicle(bookingVehicle1);
-            } else {
-                bookingVehicle1.setVehicle(vehicle);
-                bookingVehicle1.setLicenseNumber(null);
-                bookingVehicle1.setLicenseCreateDate(null);
+            }
+            if ((tf_licenseNumber.isVisible() && dp_licenseCreateDate.isVisible()) && bool) {
+                BookingVehicle bookingVehicle1 = new BookingVehicle();
+                if (!(vehicle.getDriverLicense().equals("") || vehicle.getDriverLicense().equals("B"))) {
+                    if (!cb_b.isSelected() && (cb_a.isSelected() || cb_c.isSelected())) {
+                        try {
+                            checkLicenseInfo();
+                            bookingVehicle1.setVehicle(vehicle);
+                            bookingVehicle1.setLicenseNumber(tf_licenseNumber.getText());
+                            Timestamp licenseCreateDate = new Timestamp(Date.from(dp_licenseCreateDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+                            bookingVehicle1.setLicenseCreateDate(licenseCreateDate);
+                            System.out.println("6666666666666666666");
+                            setBookingVehicle(bookingVehicle1);
 
-                setBookingVehicle(bookingVehicle1);
+                        } catch (UIException e) {
+                            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+                            alertError.showAndWait();
+                        }
+                    }
+
+                } else {
+                    bookingVehicle1.setVehicle(vehicle);
+                    bookingVehicle1.setLicenseNumber("");
+                    bookingVehicle1.setLicenseCreateDate(null);
+                    System.out.println("5555555555555555555555");
+                    setBookingVehicle(bookingVehicle1);
+                }
+            } else {
+                Alert alert = new Alert(Alert.AlertType.WARNING, "you dont need to write license number or date.");
+                alert.showAndWait();
+
             }
         } else {
-            Alert alert=new Alert(Alert.AlertType.WARNING,"you dont need to write license number or date.");
-            alert.showAndWait();
-
-        }
-        setLicenseInfo(false);
-
-        /*if (bookingVehicle != null){
-            boolean b = true;
-            for (BookingVehicle bookingVehicle1 : bookingVehicle){
-                if ((vehicle.getDriverLicense().contains("A") || vehicle.getDriverLicense().contains("C")) && (bookingVehicle1.getLicenseNumber() ==null || bookingVehicle1.getLicenseCreateDate() != null)){
-                    b = false;
-                }
-            }
-            if (!b || ((vehicle.getDriverLicense().contains("A") || vehicle.getDriverLicense().contains("C")&& b))){
-                Stage stage = new Stage();
-                LicenseController licenseController = new LicenseController(this, vehicle, stage);
-                FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/licenseNumberAndDate.fxml"));
-                fxmlLoader.setControllerFactory(param -> param.isInstance(licenseController) ? licenseController : null);
-                Parent root = fxmlLoader.load();
-                Scene scene = new Scene(root);
-                stage.setScene(scene);
-                stage.show();
-
+            if (tf_licenseNumber.isVisible() && dp_licenseCreateDate.isVisible()) {
                 BookingVehicle bookingVehicle1 = new BookingVehicle();
-                bookingVehicle1.setVehicle(vehicle);
-                bookingVehicle1.setLicenseNumber(licenseController.getTf_licenseNumber().getText());
-                Timestamp licenseCreateDate = new Timestamp(Date.from(licenseController.getDp_licenseCreateDate().getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
-                bookingVehicle1.setLicenseCreateDate(licenseCreateDate);
-                setBookingVehicle(bookingVehicle1);
+                if (!cb_b.isSelected() && (cb_a.isSelected() || cb_c.isSelected())) {
+                    try {
+                        checkLicenseInfo();
+                        bookingVehicle1.setVehicle(vehicle);
+                        bookingVehicle1.setLicenseNumber(tf_licenseNumber.getText());
+                        Timestamp licenseCreateDate = new Timestamp(Date.from(dp_licenseCreateDate.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
+                        bookingVehicle1.setLicenseCreateDate(licenseCreateDate);
+                        System.out.println("6666666666666666666");
+                        setBookingVehicle(bookingVehicle1);
+
+                    } catch (UIException e) {
+                        Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+                        alertError.showAndWait();
+                    }
+
+                } else {
+                    bookingVehicle1.setVehicle(vehicle);
+                    bookingVehicle1.setLicenseNumber("");
+                    bookingVehicle1.setLicenseCreateDate(null);
+                    System.out.println("5555555555555555555555");
+                    setBookingVehicle(bookingVehicle1);
+                }
             } else {
-                Alert alert=new Alert(Alert.AlertType.WARNING,"you dont need to write license number or date.");
+                Alert alert = new Alert(Alert.AlertType.WARNING, "you dont need to write license number or date.");
                 alert.showAndWait();
+
             }
-        }*/
+        }
     }
 
     public void check() throws UIException {
@@ -875,7 +1037,7 @@ public class MainWindowController implements Initializable{
         } else if (!ibanValidator.isValid(tf_payNumber.getText()) && !creditCardValidator.isValid(tf_payNumber.getText())) {
             throw new UIException("Pay number is not valid.");
         }
-    }
+    }*/
 
     public List<BookingVehicle> getBookingVehicle() {
         return bookingVehicle;
@@ -888,3 +1050,5 @@ public class MainWindowController implements Initializable{
         this.stage.close();
     }
 }
+
+//AT611904300234573201

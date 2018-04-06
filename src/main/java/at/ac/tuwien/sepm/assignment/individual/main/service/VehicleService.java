@@ -9,13 +9,33 @@ import java.util.List;
 
 public interface VehicleService {
 
-    Vehicle create(Vehicle vehicle) throws DAOException, ServiceException;
+    /**creating new vehicle
+     * @param vehicle
+     * @return vehicle
+     * @throws ServiceException
+     */
+    Vehicle create(Vehicle vehicle) throws ServiceException;
 
-    Vehicle delete(Vehicle vehicle) throws DAOException;
+    /**delete vehicle
+     * @param vehicle
+     * @return vehicle
+     * @throws ServiceException
+     */
+    Vehicle delete(Vehicle vehicle) throws ServiceException;
 
-    List<Vehicle> getAllVehicleList() throws DAOException;
+    List<Vehicle> getAllVehicleList() throws ServiceException;
 
-    List<Vehicle> search(SearchFilter searchFilter);
+    /**returns filtered list of vehicle
+     * @param searchFilter
+     * @return
+     * @throws DAOException
+     */
+    List<Vehicle> search(SearchFilter searchFilter) throws ServiceException;
 
-    Vehicle update(Vehicle vehicle) throws DAOException;
+    /**updating vehicle
+     * @param vehicle
+     * @return vehicle
+     * @throws ServiceException
+     */
+    Vehicle update(Vehicle vehicle) throws ServiceException;
 }

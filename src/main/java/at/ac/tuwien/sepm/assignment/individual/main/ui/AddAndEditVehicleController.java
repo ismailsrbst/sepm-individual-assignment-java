@@ -4,6 +4,7 @@ import at.ac.tuwien.sepm.assignment.individual.main.exception.DAOException;
 import at.ac.tuwien.sepm.assignment.individual.main.entities.Vehicle;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.ServiceException;
 import at.ac.tuwien.sepm.assignment.individual.main.exception.UIException;
+import at.ac.tuwien.sepm.assignment.individual.main.persistence.BookingDAOImp;
 import at.ac.tuwien.sepm.assignment.individual.main.service.VehicleService;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -14,6 +15,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.URL;
@@ -22,6 +25,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class AddAndEditVehicleController implements Initializable{
+
     @FXML
     private TextField tf_model;
 
@@ -94,6 +98,8 @@ public class AddAndEditVehicleController implements Initializable{
     @FXML
     private Button bt_selectImage;
 
+    private final static Logger logger = LoggerFactory.getLogger(AddAndEditVehicleController.class);
+
     private MainWindowController controller;
     private VehicleService service;
     //private String imageName = "";
@@ -143,21 +149,6 @@ public class AddAndEditVehicleController implements Initializable{
         }
     }
 
-    /*private void checkNumberFormat(TextField textField){
-        textField.textProperty().addListener(new ChangeListener<String>() {
-            @Override public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-                if(newValue.isEmpty()){
-                    int value = 0;
-                }else {
-                    if (newValue.matches("((\\d*)|(\\d+\\.\\d*))")) {
-                        int value = Integer.parseInt(newValue);
-                    } else {
-                        textField.setText(oldValue);
-                    }
-                }
-            }
-        });
-    }*/
 
     private String handleOptions(){
         String mark = "";
@@ -174,7 +165,7 @@ public class AddAndEditVehicleController implements Initializable{
     }
 
     @FXML
-    void addButtonCliked(ActionEvent event) throws DAOException {
+    void addButtonCliked(ActionEvent event) {
         try {
             check();
             vehicle = new Vehicle();
@@ -193,14 +184,16 @@ public class AddAndEditVehicleController implements Initializable{
                 vehicle.setImageUrl(file.getAbsolutePath());
             }
             service.create(vehicle);
+            controller.loadTable();
         } catch (ServiceException e){
+            logger.error(e.getMessage());
             Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
             alertError.showAndWait();
         } catch (UIException e){
+            logger.error(e.getMessage());
             Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
             alertError.showAndWait();
         }
-        controller.loadTable();
     }
 
     @FXML
@@ -216,8 +209,9 @@ public class AddAndEditVehicleController implements Initializable{
             try {
                 is = new FileInputStream(file.getAbsolutePath());
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+                logger.error(e.getMessage());
+                Alert alertError = new Alert(Alert.AlertType.ERROR, "File can not open.\n"+e, ButtonType.OK);
+                alertError.showAndWait();            }
             if (is != null){
                 Image image= new Image(is);
                 long filesizeMB = file.length() / 1024 / 1024;
@@ -239,7 +233,9 @@ public class AddAndEditVehicleController implements Initializable{
                         iv_image.setImage(new Image(new FileInputStream(url)));
                     }
                 } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    logger.error(e.getMessage());
+                    Alert alertError = new Alert(Alert.AlertType.ERROR, "Image not shown.\n"+e, ButtonType.OK);
+                    alertError.showAndWait();
                 }
                 try {
                     File file2 = new File("src\\main\\resources\\Images\\" + file.getName());
@@ -247,8 +243,9 @@ public class AddAndEditVehicleController implements Initializable{
                         Files.copy(file.toPath(), file2.toPath());
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                    logger.error(e.getMessage());
+                    Alert alertError = new Alert(Alert.AlertType.ERROR, "can not copy file.\n"+e, ButtonType.OK);
+                    alertError.showAndWait();                }
             }
         }
 
@@ -274,14 +271,16 @@ public class AddAndEditVehicleController implements Initializable{
                 vehicle.setImageUrl(file.getAbsolutePath());
             }
             service.update(vehicle);
-
+            controller.loadTable();
         } catch (UIException e){
+            logger.error(e.getMessage());
             Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
             alertError.showAndWait();
-        } catch (DAOException e) {
-            e.printStackTrace();
+        } catch (ServiceException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
         }
-        controller.loadTable();
     }
 
     @FXML
@@ -297,12 +296,12 @@ public class AddAndEditVehicleController implements Initializable{
             if (buttonType.get() == ButtonType.OK) {
                 service.delete(vehicle);
                 controller.loadTable();
-                //controller.exit();
             }
-        } catch (DAOException e) {
-            e.printStackTrace();
+        } catch (ServiceException e) {
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
         }
-
     }
 
     public void setEditTable(Vehicle vehicle){
@@ -333,7 +332,9 @@ public class AddAndEditVehicleController implements Initializable{
         try {
             iv_image.setImage(new Image(new FileInputStream(vehicle.getImageUrl())));
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, "Image not shown.\n"+e, ButtonType.OK);
+            alertError.showAndWait();
         }
     }
 
