@@ -7,6 +7,7 @@ import at.ac.tuwien.sepm.assignment.individual.booking.exception.ServiceExceptio
 import at.ac.tuwien.sepm.assignment.individual.booking.persistence.VehicleDAO;
 import at.ac.tuwien.sepm.assignment.individual.booking.persistence.VehicleDAOImp;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -15,6 +16,10 @@ public class VehicleServiceImp implements VehicleService {
 
     private VehicleDAO vehicleDAO;
 
+    public VehicleServiceImp(Connection connection) throws SQLException {
+        this.vehicleDAO = new VehicleDAOImp(connection);
+    }
+
     public VehicleServiceImp() throws SQLException {
         this.vehicleDAO = new VehicleDAOImp();
     }
@@ -22,16 +27,8 @@ public class VehicleServiceImp implements VehicleService {
     private void validation(Vehicle vehicle){
         if (vehicle.getModel().trim().length() >= 30){
             throw new IllegalArgumentException("Model length can not be bigger then 30");
-        } else if (vehicle.getSeating() > 35){
-            throw new IllegalArgumentException("Seating can not be bigger then 35.");
-        } else if (vehicle.getBasePrice() > 400){
+        }  else if (vehicle.getBasePrice() > 400){
             throw new IllegalArgumentException("Base price can not be bigger then 400.");
-        } else if (vehicle.getPlateNumber().trim().length() > 10){
-            throw new IllegalArgumentException("Plate number can not be bigger then 10.");
-        } else if (vehicle.getDescription().trim().length() >= 30){
-            throw new IllegalArgumentException("Description length can not be bigger then 30");
-        } else if (vehicle.getPower() > 1000){
-            throw new IllegalArgumentException("Power can not be bigger then 1000.");
         }
     }
 

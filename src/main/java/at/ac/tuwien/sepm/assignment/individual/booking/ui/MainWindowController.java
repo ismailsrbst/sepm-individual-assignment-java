@@ -22,6 +22,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.BarChart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -43,7 +44,7 @@ import java.util.*;
 
 public class MainWindowController implements Initializable{
 
-    private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+    //private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
     private static final double VISIBLE = 1.0;
     private static final double INVISIBLE = 0.0;
 
@@ -189,6 +190,9 @@ public class MainWindowController implements Initializable{
 
     @FXML
     private BarChart<String, Integer> barChartId;
+
+    @FXML
+    private LineChart<String, Integer> lineChartId;
 
     private final static Logger logger = LoggerFactory.getLogger(MainWindowController.class);
     private final VehicleService vehicleService;
@@ -754,24 +758,32 @@ public class MainWindowController implements Initializable{
             Timestamp endDate = new Timestamp(Date.from(dp_endDateStatistic.getValue().atStartOfDay(ZoneId.systemDefault()).toInstant()).getTime());
 
             ObservableList<XYChart.Series<String, Integer>> list = FXCollections.observableArrayList();
+            ObservableList<XYChart.Series<String, Integer>> lineChartlist = FXCollections.observableArrayList();
+            lineChartId.getData().clear();
+            lineChartId.setAnimated(false);
             barChartId.getData().clear();
             barChartId.setAnimated(false);
             try {
                 checkLicense();
                 if (cb_Astatistic.isSelected()) {
+                    lineChartlist.add(getLineChart(beginDate, endDate, 'A'));
                     list.add(getBarChart(beginDate, endDate, 'A'));
                 }
                 if (cb_Bstatistic.isSelected()) {
+                    lineChartlist.add(getLineChart(beginDate, endDate, 'B'));
                     list.add(getBarChart(beginDate, endDate, 'B'));
                 }
                 if (cb_Cstatistic.isSelected()) {
+                    lineChartlist.add(getLineChart(beginDate, endDate, 'C'));
                     list.add(getBarChart(beginDate, endDate, 'C'));
 
                 }
                 if (cb_noneStatistic.isSelected()) {
+                    lineChartlist.add(getLineChart(beginDate, endDate, (char)0));
                     list.add(getBarChart(beginDate, endDate, (char)0));
                 }
                 barChartId.getData().addAll(list);
+                lineChartId.getData().addAll(lineChartlist);
             } catch (InputException e) {
                 Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
                 alertError.showAndWait();
@@ -780,6 +792,47 @@ public class MainWindowController implements Initializable{
             Alert alertError = new Alert(Alert.AlertType.ERROR, "you must entry start and end date.", ButtonType.OK);
             alertError.showAndWait();
         }
+    }
+
+    private XYChart.Series<String, Integer> getLineChart(Timestamp start, Timestamp end, char license) {
+        XYChart.Series<String, Integer> chart = new XYChart.Series<>();
+
+        try {
+            List<BookingVehicle> bookingVehicleList = bookingVehicleService.getBookingVehicle(start, end, license);
+            List<Booking> bookingList = new ArrayList<>();
+            if (bookingVehicleList != null || !bookingVehicleList.isEmpty()) {
+                for (BookingVehicle bookingVehicle : bookingVehicleList) {
+                    if (!bookingList.isEmpty()) {
+                        if (!bookingList.contains(bookingVehicle.getBid())) {
+                            bookingList.add(bookingService.getBookingByBid(bookingVehicle.getBid()));
+                        }
+                    } else {
+                        bookingList.add(bookingService.getBookingByBid(bookingVehicle.getBid()));
+                    }
+                }
+            }
+
+
+            LocalDateTime startLocalDate = start.toLocalDateTime();
+            LocalDateTime endLocalDate = end.toLocalDateTime();
+            while (!startLocalDate.isEqual(endLocalDate.plusDays(1))) {
+                int total = 0;
+                for (BookingVehicle bookingVehicle : bookingVehicleList) {
+                    for (Booking booking : bookingList) {
+                        if (booking.getBeginnDate().toLocalDateTime().isBefore(startLocalDate) || booking.getBeginnDate().toLocalDateTime().isEqual(startLocalDate)) {
+                            total += bookingVehicle.getBasePrice() * getDifferenzTwoDateInHour(booking.getEndDate(), booking.getBeginnDate());
+                        }
+                    }
+                }
+                chart.getData().add(new XYChart.Data(startLocalDate.toString(), total));
+                startLocalDate = startLocalDate.plusDays(1);
+            }
+        }catch(ServiceException e){
+            logger.error(e.getMessage());
+            Alert alertError = new Alert(Alert.AlertType.ERROR, e.getMessage(), ButtonType.OK);
+            alertError.showAndWait();
+        }
+        return chart;
     }
 
     private XYChart.Series<String, Integer> getBarChart(Timestamp start, Timestamp end, char license){
@@ -792,6 +845,11 @@ public class MainWindowController implements Initializable{
             if (bookingVehicleList != null || !bookingVehicleList.isEmpty()){
                 for (BookingVehicle bookingVehicle : bookingVehicleList){
                     if (!bookingList.isEmpty()){
+                        for (Booking booking : bookingList){
+                            if (booking.getBid() == bookingVehicle.getBid()){
+                                bookingList.add(bookingService.getBookingByBid(bookingVehicle.getBid()));
+                            }
+                        }
                         if (!bookingList.contains(bookingVehicle.getBid())){
                             bookingList.add(bookingService.getBookingByBid(bookingVehicle.getBid()));
                         }
