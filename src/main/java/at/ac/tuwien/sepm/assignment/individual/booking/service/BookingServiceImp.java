@@ -17,9 +17,9 @@ public class BookingServiceImp implements BookingService {
         this.bookingDAO = new BookingDAOImp();
     }
 
-    public void validation(Booking booking){
+    public void validation(Booking booking) throws ServiceException {
         if (booking.getCustomerName().trim().length() >= 50){
-            throw new IllegalArgumentException("Customer Name can not be bigger than 50");
+            throw new ServiceException("Customer Name can not be bigger than 50");
         }
     }
 

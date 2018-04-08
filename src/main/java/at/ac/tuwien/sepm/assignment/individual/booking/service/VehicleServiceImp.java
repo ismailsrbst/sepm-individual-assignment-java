@@ -24,11 +24,11 @@ public class VehicleServiceImp implements VehicleService {
         this.vehicleDAO = new VehicleDAOImp();
     }
 
-    private void validation(Vehicle vehicle){
+    private void validation(Vehicle vehicle) throws ServiceException {
         if (vehicle.getModel().trim().length() >= 30){
-            throw new IllegalArgumentException("Model length can not be bigger then 30");
+            throw new ServiceException("Model length can not be bigger then 30");
         }  else if (vehicle.getBasePrice() > 400){
-            throw new IllegalArgumentException("Base price can not be bigger then 400.");
+            throw new ServiceException("Base price can not be bigger then 400.");
         }
     }
 

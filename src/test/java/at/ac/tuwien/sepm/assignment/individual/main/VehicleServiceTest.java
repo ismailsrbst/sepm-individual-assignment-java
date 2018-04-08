@@ -102,7 +102,7 @@ public class VehicleServiceTest {
         assertFalse(vehicle1 != null);
     }
 
-    @Test
+    @Test(expected = ServiceException.class)
     public void testModelLength() throws ServiceException {
         Vehicle vehicle = new Vehicle();
         vehicle.setModel("car4asdfdsaf asdfadsfdsafasdfasfdsa");
@@ -114,8 +114,6 @@ public class VehicleServiceTest {
         vehicle.setBasePrice(11);
         vehicle.setCreateDate(new Timestamp(System.currentTimeMillis()));
         Vehicle vehicle1 = vehicleService.create(vehicle);
-
-        assertFalse(vehicle1 != null);
     }
 
 }
