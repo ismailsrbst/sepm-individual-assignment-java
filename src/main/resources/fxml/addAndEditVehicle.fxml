@@ -10,7 +10,7 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="567.0" prefWidth="444.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.main.ui.AddAndEditVehicleController">
+<AnchorPane prefHeight="567.0" prefWidth="444.0" xmlns="http://javafx.com/javafx/9.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="at.ac.tuwien.sepm.assignment.individual.booking.ui.AddAndEditVehicleController">
    <children>
       <Label layoutX="95.0" layoutY="37.0" text="Model*:" />
       <Label layoutX="35.0" layoutY="77.0" text="Construction Year*:" />
@@ -47,6 +47,6 @@
       <Button fx:id="bt_booking" layoutX="337.0" layoutY="516.0" mnemonicParsing="false" onAction="#bookingButtonCliked" text="Booking" />
       <Button fx:id="bt_delete" layoutX="277.0" layoutY="516.0" mnemonicParsing="false" onAction="#deleteButtonCliked" text="Delete" />
       <Label fx:id="lb_createDate" ellipsisString="" layoutX="247.0" layoutY="397.0" />
-      <Label fx:id="lb_edtDate" ellipsisString="" layoutX="247.0" layoutY="424.0" prefHeight="17.0" prefWidth="60.0" />
+      <Label fx:id="lb_editDate" layoutX="254.0" layoutY="433.0" />
    </children>
 </AnchorPane>

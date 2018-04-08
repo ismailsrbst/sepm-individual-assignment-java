@@ -1,10 +1,8 @@
 package at.ac.tuwien.sepm.assignment.individual.application;
 
-import at.ac.tuwien.sepm.assignment.individual.main.entities.BookingVehicle;
-import at.ac.tuwien.sepm.assignment.individual.main.service.*;
-import at.ac.tuwien.sepm.assignment.individual.main.ui.BookingVehicleController;
-import at.ac.tuwien.sepm.assignment.individual.main.ui.MainWindowController;
-import at.ac.tuwien.sepm.assignment.individual.main.util.DBUtil;
+import at.ac.tuwien.sepm.assignment.individual.booking.service.*;
+import at.ac.tuwien.sepm.assignment.individual.booking.ui.MainWindowController;
+import at.ac.tuwien.sepm.assignment.individual.booking.util.DBUtil;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
