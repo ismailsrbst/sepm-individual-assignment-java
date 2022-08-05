@@ -13,8 +13,8 @@
       <Label layoutX="59.0" layoutY="73.0" text="Pay Number:" />
       <Label layoutX="41.0" layoutY="36.0" text="Customer Name:" />
       <Label layoutX="51.0" layoutY="114.0" text="Starting Date:" />
-      <TextField fx:id="tf_customerName" layoutX="150.0" layoutY="32.0" text="ISMAIL" />
-      <TextField fx:id="tf_payNumber" layoutX="150.0" layoutY="69.0" text="AT611904300234573201" />
+      <TextField fx:id="tf_customerName" layoutX="150.0" layoutY="32.0" promptText="ISMAIL" />
+      <TextField fx:id="tf_payNumber" layoutX="150.0" layoutY="69.0" promptText="AT611904300234573201" />
       <Label fx:id="lb_startDate" layoutX="150.0" layoutY="114.0" />
       <Label fx:id="lb_endDate" layoutX="151.0" layoutY="150.0" />
       <TableView fx:id="tv_bookingVehicle" layoutX="373.0" layoutY="2.0" prefHeight="370.0" prefWidth="228.0">

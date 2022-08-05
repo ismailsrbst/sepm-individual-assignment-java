@@ -845,12 +845,16 @@ public class MainWindowController implements Initializable{
             if (bookingVehicleList != null || !bookingVehicleList.isEmpty()){
                 for (BookingVehicle bookingVehicle : bookingVehicleList){
                     if (!bookingList.isEmpty()){
+                        boolean b = true;
+
                         for (Booking booking : bookingList){
-                            if (booking.getBid() == bookingVehicle.getBid()){
-                                bookingList.add(bookingService.getBookingByBid(bookingVehicle.getBid()));
+                            System.out.println("111111111 " +(booking.getBid() != bookingVehicle.getBid() ));
+                            if (booking.getBid() != bookingVehicle.getBid()){
+                                b = false;
+                                //bookingList.add(bookingService.getBookingByBid(bookingVehicle.getBid()));
                             }
                         }
-                        if (!bookingList.contains(bookingVehicle.getBid())){
+                        if (!b){
                             bookingList.add(bookingService.getBookingByBid(bookingVehicle.getBid()));
                         }
                     } else {

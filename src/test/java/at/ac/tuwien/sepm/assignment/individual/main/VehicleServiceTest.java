@@ -114,6 +114,8 @@ public class VehicleServiceTest {
         vehicle.setBasePrice(11);
         vehicle.setCreateDate(new Timestamp(System.currentTimeMillis()));
         Vehicle vehicle1 = vehicleService.create(vehicle);
+
+
     }
 
 }
