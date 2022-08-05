@@ -17,4 +17,4 @@ getestet werden können.
 
 Das Programm kann mit dem Befehl:\
 ```mvnw exec:java```\
-ausgeführt werden.
+ausgeführt werden.# sepm-individual-assignment-java
